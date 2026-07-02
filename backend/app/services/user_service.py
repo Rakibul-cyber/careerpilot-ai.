@@ -8,7 +8,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.security import hash_password
+from app.core.security import hash_password, verify_password
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate, UserUpdate
@@ -58,3 +58,22 @@ class UserService:
 
     def delete_user(self, db: Session, user: User) -> User:
         return self.user_repository.soft_delete(db, user)
+
+    def authenticate_user(
+        self, db: Session, email: str, password: str
+    ) -> User | None:
+        """Return the user if credentials are valid and the account is usable.
+
+        Returns None for unknown email, inactive account, passwordless
+        (OAuth-only) account, or an incorrect password.
+        """
+        user = self.user_repository.get_by_email(db, email.strip().lower())
+        if user is None:
+            return None
+        if not user.is_active:
+            return None
+        if not user.hashed_password:
+            return None
+        if not verify_password(password, user.hashed_password):
+            return None
+        return user
