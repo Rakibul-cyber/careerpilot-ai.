@@ -3,6 +3,8 @@
 # repositories, external integrations, and domain logic. Endpoints call services;
 # services call repositories. This is the only layer that endpoints depend on.
 
+from app.services.company_service import CompanyService
+from app.services.job_ingestion_service import JobIngestionService
 from app.services.user_service import UserService
 
-__all__ = ["UserService"]
+__all__ = ["UserService", "CompanyService", "JobIngestionService"]
