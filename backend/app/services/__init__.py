@@ -1,0 +1,4 @@
+# services package.
+# Application / use-case layer. Encapsulates business rules and orchestrates
+# repositories, external integrations, and domain logic. Endpoints call services;
+# services call repositories. This is the only layer that endpoints depend on.
