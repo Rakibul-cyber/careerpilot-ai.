@@ -12,10 +12,10 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app.models.job import Job, JobSource
+from app.models.job import Job, JobSource, JobStatus
 
 
 class JobRepository:
@@ -62,6 +62,77 @@ class JobRepository:
                 Job.deleted_at.is_(None),
             )
             .order_by(Job.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(db.execute(stmt).scalars().all())
+
+    def list_stale_active_jobs(
+        self,
+        db: Session,
+        older_than: datetime,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[Job]:
+        """Active jobs never verified or last verified before ``older_than``.
+
+        Ordered oldest-verified first (NULLs first) so the most overdue jobs
+        are processed before fresher ones.
+        """
+        stmt = (
+            select(Job)
+            .where(
+                Job.deleted_at.is_(None),
+                Job.status == JobStatus.ACTIVE,
+                or_(
+                    Job.last_verified_at.is_(None),
+                    Job.last_verified_at < older_than,
+                ),
+            )
+            .order_by(Job.last_verified_at.asc().nullsfirst())
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(db.execute(stmt).scalars().all())
+
+    def list_expired_jobs(
+        self,
+        db: Session,
+        now: datetime,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[Job]:
+        """Active jobs whose expires_at deadline has passed."""
+        stmt = (
+            select(Job)
+            .where(
+                Job.deleted_at.is_(None),
+                Job.status == JobStatus.ACTIVE,
+                Job.expires_at.is_not(None),
+                Job.expires_at < now,
+            )
+            .order_by(Job.expires_at.asc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(db.execute(stmt).scalars().all())
+
+    def list_jobs_for_archival(
+        self,
+        db: Session,
+        older_than: datetime,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[Job]:
+        """Expired jobs untouched since ``older_than`` (candidates to archive)."""
+        stmt = (
+            select(Job)
+            .where(
+                Job.deleted_at.is_(None),
+                Job.status == JobStatus.EXPIRED,
+                Job.updated_at < older_than,
+            )
+            .order_by(Job.updated_at.asc())
             .offset(skip)
             .limit(limit)
         )

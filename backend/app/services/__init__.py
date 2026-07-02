@@ -5,6 +5,12 @@
 
 from app.services.company_service import CompanyService
 from app.services.job_ingestion_service import JobIngestionService
+from app.services.job_verification_service import JobVerificationService
 from app.services.user_service import UserService
 
-__all__ = ["UserService", "CompanyService", "JobIngestionService"]
+__all__ = [
+    "UserService",
+    "CompanyService",
+    "JobIngestionService",
+    "JobVerificationService",
+]
