@@ -6,7 +6,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db, get_user_service
+from app.api.deps import get_current_user, get_db, get_user_service
+from app.models.user import User
 from app.schemas.user import UserCreate, UserRead
 from app.services.user_service import UserService
 
@@ -32,3 +33,11 @@ def register_user(
             detail="User with this email already exists",
         )
     return user
+
+
+@router.get("/me", response_model=UserRead)
+def read_current_user(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Return the currently authenticated user."""
+    return current_user
