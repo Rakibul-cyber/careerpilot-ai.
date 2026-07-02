@@ -15,6 +15,8 @@ from app.core.security import decode_access_token
 from app.db.session import get_db  # noqa: F401  (re-exported dependency)
 from app.models.user import User, UserRole
 from app.schemas.auth import TokenPayload
+from app.services.company_service import CompanyService
+from app.services.job_service import JobService
 from app.services.user_service import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -22,6 +24,14 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 def get_user_service() -> UserService:
     return UserService()
+
+
+def get_company_service() -> CompanyService:
+    return CompanyService()
+
+
+def get_job_service() -> JobService:
+    return JobService()
 
 
 def get_current_user(

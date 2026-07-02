@@ -3,6 +3,8 @@
 # Owns company normalization and the get-or-create dedup rule so scrapers and
 # other callers can't create duplicate companies for the same normalized name.
 
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from app.models.company import Company
@@ -13,6 +15,16 @@ from app.utils.normalization import normalize_company_name
 class CompanyService:
     def __init__(self, company_repository: CompanyRepository | None = None) -> None:
         self.company_repository = company_repository or CompanyRepository()
+
+    def get_company_by_id(
+        self, db: Session, company_id: UUID
+    ) -> Company | None:
+        return self.company_repository.get_by_id(db, company_id)
+
+    def list_companies(
+        self, db: Session, skip: int = 0, limit: int = 50
+    ) -> list[Company]:
+        return self.company_repository.list(db, skip=skip, limit=limit)
 
     def get_or_create_company(
         self, db: Session, name: str, location: str | None = None
