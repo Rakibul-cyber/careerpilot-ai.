@@ -1,6 +1,11 @@
-# Declarative base for all ORM models.
-# Models will subclass Base and be imported here later for Alembic autogenerate.
+# Declarative base for all ORM models (SQLAlchemy 2.x style).
+#
+# This module defines ONLY ``Base`` and imports no models, so it can be safely
+# imported from model modules without creating a circular import. Model
+# discovery for Alembic lives in ``app.db.base_all``.
 
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass

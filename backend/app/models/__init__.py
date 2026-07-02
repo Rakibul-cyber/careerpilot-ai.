@@ -3,3 +3,8 @@
 # One module per aggregate/entity (e.g. user.py, resume.py, job_application.py).
 # These represent database state only — kept separate from Pydantic schemas so the
 # storage model and the API contract can evolve independently.
+
+from app.models.base import BaseModel
+from app.models.user import User, UserRole
+
+__all__ = ["BaseModel", "User", "UserRole"]
