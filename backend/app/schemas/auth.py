@@ -1,5 +1,8 @@
 # Authentication transport schemas.
 
+from datetime import datetime
+from uuid import UUID
+
 from pydantic import BaseModel
 
 
@@ -8,3 +11,11 @@ class Token(BaseModel):
 
     access_token: str
     token_type: str = "bearer"
+
+
+class TokenPayload(BaseModel):
+    """Decoded JWT claims. Validation coerces sub->UUID and exp->datetime."""
+
+    sub: UUID
+    type: str
+    exp: datetime

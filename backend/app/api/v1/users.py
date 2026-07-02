@@ -6,8 +6,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db, get_user_service
-from app.models.user import User
+from app.api.deps import (
+    get_current_user,
+    get_db,
+    get_user_service,
+    require_role,
+)
+from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserRead
 from app.services.user_service import UserService
 
@@ -41,3 +46,13 @@ def read_current_user(
 ) -> User:
     """Return the currently authenticated user."""
     return current_user
+
+
+# --- TEMPORARY / DEV ONLY ---------------------------------------------------
+# Throwaway endpoint used solely to verify the require_role RBAC dependency.
+# Remove once real admin features (with their own routes) are implemented.
+@router.get("/admin-check")
+def admin_check(
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+) -> dict:
+    return {"message": "Admin access granted"}
