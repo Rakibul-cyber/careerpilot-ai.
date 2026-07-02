@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
 
+    # PostgreSQL connection string used by the SQLAlchemy engine.
+    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/careerpilot"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

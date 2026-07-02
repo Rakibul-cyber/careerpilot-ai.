@@ -17,10 +17,12 @@ services:
       - .:/app
 
   db:
-    image: postgres:16-alpine
-    container_name: careerpilot_db
-    env_file:
-      - .env
+    image: postgres:16
+    container_name: careerpilot_postgres
+    environment:
+      POSTGRES_DB: careerpilot
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
