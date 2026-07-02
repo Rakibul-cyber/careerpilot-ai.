@@ -1,0 +1,119 @@
+# Job entity — a normalized job listing tied to a Company.
+#
+# Dedup strategy (v1): a unique (source, external_id) pair prevents re-ingesting
+# the same listing from the same source. external_id stays nullable so manually
+# entered jobs (no external id) are allowed; NULLs are not deduped by that
+# constraint. Smarter dedup (normalized_title + company + location) comes later.
+
+import enum
+import uuid
+from datetime import datetime
+
+from sqlalchemy import (
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.base import Base
+from app.models.base import BaseModel
+from app.models.company import Company  # noqa: F401  (registers "Company" mapper)
+
+
+class JobSource(str, enum.Enum):
+    LINKEDIN = "linkedin"
+    INDEED = "indeed"
+    STEPSTONE = "stepstone"
+    COMPANY_WEBSITE = "company_website"
+    MANUAL = "manual"
+    OTHER = "other"
+
+
+class JobStatus(str, enum.Enum):
+    ACTIVE = "active"
+    EXPIRED = "expired"
+    DUPLICATE = "duplicate"
+    ARCHIVED = "archived"
+
+
+class Job(BaseModel, Base):
+    __tablename__ = "jobs"
+    __table_args__ = (
+        UniqueConstraint(
+            "source", "external_id", name="uq_jobs_source_external_id"
+        ),
+    )
+
+    title: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    normalized_title: Mapped[str] = mapped_column(
+        String(255), nullable=False, index=True
+    )
+
+    # Owning company; RESTRICT so a company can't be deleted while jobs exist.
+    company_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+
+    location: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, index=True
+    )
+    # e.g. onsite, hybrid, remote
+    remote_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    # e.g. full_time, part_time, working_student, internship
+    employment_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+    source: Mapped[JobSource] = mapped_column(
+        Enum(
+            JobSource,
+            name="job_source",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        default=JobSource.OTHER,
+        server_default=JobSource.OTHER.value,
+        nullable=False,
+        index=True,
+    )
+    source_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    external_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, index=True
+    )
+
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    requirements: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    salary_min: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    salary_max: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    currency: Mapped[str | None] = mapped_column(String(3), nullable=True)
+
+    status: Mapped[JobStatus] = mapped_column(
+        Enum(
+            JobStatus,
+            name="job_status",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        default=JobStatus.ACTIVE,
+        server_default=JobStatus.ACTIVE.value,
+        nullable=False,
+        index=True,
+    )
+
+    posted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    last_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    company = relationship("Company")

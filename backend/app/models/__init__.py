@@ -5,6 +5,16 @@
 # storage model and the API contract can evolve independently.
 
 from app.models.base import BaseModel
+from app.models.company import Company
+from app.models.job import Job, JobSource, JobStatus
 from app.models.user import User, UserRole
 
-__all__ = ["BaseModel", "User", "UserRole"]
+__all__ = [
+    "BaseModel",
+    "User",
+    "UserRole",
+    "Company",
+    "Job",
+    "JobSource",
+    "JobStatus",
+]
