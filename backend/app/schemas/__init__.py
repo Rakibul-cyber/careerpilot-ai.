@@ -4,6 +4,13 @@
 # serialization boundaries and are intentionally decoupled from ORM models.
 
 from app.schemas.auth import Token, TokenPayload
+from app.schemas.company import (
+    CompanyBase,
+    CompanyCreate,
+    CompanyRead,
+    CompanyUpdate,
+)
+from app.schemas.job import JobBase, JobCreate, JobRead, JobUpdate
 from app.schemas.user import UserBase, UserCreate, UserRead, UserUpdate
 
 __all__ = [
@@ -13,4 +20,12 @@ __all__ = [
     "UserRead",
     "Token",
     "TokenPayload",
+    "CompanyBase",
+    "CompanyCreate",
+    "CompanyUpdate",
+    "CompanyRead",
+    "JobBase",
+    "JobCreate",
+    "JobUpdate",
+    "JobRead",
 ]
