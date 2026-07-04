@@ -17,6 +17,7 @@ from app.models.user import User, UserRole
 from app.schemas.auth import TokenPayload
 from app.services.company_service import CompanyService
 from app.services.job_service import JobService
+from app.services.saved_search_service import SavedSearchService
 from app.services.user_service import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -32,6 +33,10 @@ def get_company_service() -> CompanyService:
 
 def get_job_service() -> JobService:
     return JobService()
+
+
+def get_saved_search_service() -> SavedSearchService:
+    return SavedSearchService()
 
 
 def get_current_user(

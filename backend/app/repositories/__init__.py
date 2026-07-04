@@ -5,6 +5,12 @@
 
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.job_repository import JobRepository
+from app.repositories.saved_search_repository import SavedSearchRepository
 from app.repositories.user_repository import UserRepository
 
-__all__ = ["UserRepository", "CompanyRepository", "JobRepository"]
+__all__ = [
+    "UserRepository",
+    "CompanyRepository",
+    "JobRepository",
+    "SavedSearchRepository",
+]

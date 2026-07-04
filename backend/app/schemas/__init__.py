@@ -12,6 +12,12 @@ from app.schemas.company import (
 )
 from app.schemas.ingestion import RawJobInput
 from app.schemas.job import JobBase, JobCreate, JobFilter, JobRead, JobUpdate
+from app.schemas.saved_search import (
+    SavedSearchBase,
+    SavedSearchCreate,
+    SavedSearchRead,
+    SavedSearchUpdate,
+)
 from app.schemas.user import UserBase, UserCreate, UserRead, UserUpdate
 
 __all__ = [
@@ -31,4 +37,8 @@ __all__ = [
     "JobRead",
     "JobFilter",
     "RawJobInput",
+    "SavedSearchBase",
+    "SavedSearchCreate",
+    "SavedSearchUpdate",
+    "SavedSearchRead",
 ]
