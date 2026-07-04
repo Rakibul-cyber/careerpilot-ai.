@@ -12,6 +12,12 @@ from app.schemas.company import (
 )
 from app.schemas.ingestion import RawJobInput
 from app.schemas.job import JobBase, JobCreate, JobFilter, JobRead, JobUpdate
+from app.schemas.job_alert import (
+    JobAlertBase,
+    JobAlertCreate,
+    JobAlertRead,
+    JobAlertUpdate,
+)
 from app.schemas.saved_search import (
     SavedSearchBase,
     SavedSearchCreate,
@@ -41,4 +47,8 @@ __all__ = [
     "SavedSearchCreate",
     "SavedSearchUpdate",
     "SavedSearchRead",
+    "JobAlertBase",
+    "JobAlertCreate",
+    "JobAlertUpdate",
+    "JobAlertRead",
 ]

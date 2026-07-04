@@ -16,6 +16,7 @@ from app.db.session import get_db  # noqa: F401  (re-exported dependency)
 from app.models.user import User, UserRole
 from app.schemas.auth import TokenPayload
 from app.services.company_service import CompanyService
+from app.services.job_alert_service import JobAlertService
 from app.services.job_service import JobService
 from app.services.saved_search_service import SavedSearchService
 from app.services.user_service import UserService
@@ -37,6 +38,10 @@ def get_job_service() -> JobService:
 
 def get_saved_search_service() -> SavedSearchService:
     return SavedSearchService()
+
+
+def get_job_alert_service() -> JobAlertService:
+    return JobAlertService()
 
 
 def get_current_user(

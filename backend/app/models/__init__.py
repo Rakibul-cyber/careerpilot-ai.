@@ -7,6 +7,7 @@
 from app.models.base import BaseModel
 from app.models.company import Company
 from app.models.job import Job, JobSource, JobStatus
+from app.models.job_alert import JobAlert, JobAlertFrequency
 from app.models.saved_search import SavedSearch
 from app.models.user import User, UserRole
 
@@ -19,4 +20,6 @@ __all__ = [
     "JobSource",
     "JobStatus",
     "SavedSearch",
+    "JobAlert",
+    "JobAlertFrequency",
 ]
