@@ -5,7 +5,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_company_service, get_current_user, get_db, get_job_service
@@ -20,8 +20,8 @@ router = APIRouter(prefix="/companies", tags=["Companies"])
 
 @router.get("", response_model=list[CompanyRead])
 def list_companies(
-    skip: int = 0,
-    limit: int = 50,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
     company_service: CompanyService = Depends(get_company_service),
     current_user: User = Depends(get_current_user),
@@ -50,8 +50,8 @@ def get_company(
 @router.get("/{company_id}/jobs", response_model=list[JobRead])
 def list_company_jobs(
     company_id: UUID,
-    skip: int = 0,
-    limit: int = 50,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
     company_service: CompanyService = Depends(get_company_service),
     job_service: JobService = Depends(get_job_service),

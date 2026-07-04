@@ -16,6 +16,8 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.models.job import Job, JobSource, JobStatus
+from app.schemas.job import JobFilter
+from app.utils.normalization import normalize_job_title
 
 
 class JobRepository:
@@ -61,6 +63,54 @@ class JobRepository:
                 Job.company_id == company_id,
                 Job.deleted_at.is_(None),
             )
+            .order_by(Job.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(db.execute(stmt).scalars().all())
+
+    def search(
+        self,
+        db: Session,
+        filters: JobFilter,
+        skip: int = 0,
+        limit: int = 50,
+    ) -> list[Job]:
+        """Search live jobs by the given filters, newest first.
+
+        Status defaults to ACTIVE when the caller doesn't specify one, so the
+        default listing never surfaces expired/archived/duplicate jobs.
+        """
+        conditions = [Job.deleted_at.is_(None)]
+
+        status = filters.status if filters.status is not None else JobStatus.ACTIVE
+        conditions.append(Job.status == status)
+
+        if filters.query:
+            normalized_query = normalize_job_title(filters.query)
+            conditions.append(
+                or_(
+                    Job.normalized_title.ilike(f"%{normalized_query}%"),
+                    Job.description.ilike(f"%{filters.query}%"),
+                    Job.requirements.ilike(f"%{filters.query}%"),
+                )
+            )
+
+        if filters.location:
+            conditions.append(Job.location.ilike(f"%{filters.location}%"))
+
+        if filters.employment_type:
+            conditions.append(Job.employment_type == filters.employment_type)
+
+        if filters.remote_type:
+            conditions.append(Job.remote_type == filters.remote_type)
+
+        if filters.source:
+            conditions.append(Job.source == filters.source)
+
+        stmt = (
+            select(Job)
+            .where(*conditions)
             .order_by(Job.created_at.desc())
             .offset(skip)
             .limit(limit)

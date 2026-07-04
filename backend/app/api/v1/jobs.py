@@ -5,12 +5,13 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db, get_job_service
+from app.models.job import JobSource, JobStatus
 from app.models.user import User
-from app.schemas.job import JobRead
+from app.schemas.job import JobFilter, JobRead
 from app.services.job_service import JobService
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
@@ -18,14 +19,31 @@ router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 @router.get("", response_model=list[JobRead])
 def list_jobs(
-    skip: int = 0,
-    limit: int = 50,
+    query: str | None = None,
+    location: str | None = None,
+    employment_type: str | None = None,
+    remote_type: str | None = None,
+    status: JobStatus | None = None,
+    source: JobSource | None = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
     job_service: JobService = Depends(get_job_service),
     current_user: User = Depends(get_current_user),
 ) -> list[JobRead]:
-    """List jobs (newest first), paginated."""
-    return job_service.list_jobs(db, skip=skip, limit=limit)
+    """Search jobs by optional filters (newest first), paginated.
+
+    With no ``status`` filter the result is restricted to ACTIVE jobs.
+    """
+    filters = JobFilter(
+        query=query,
+        location=location,
+        employment_type=employment_type,
+        remote_type=remote_type,
+        status=status,
+        source=source,
+    )
+    return job_service.search_jobs(db, filters=filters, skip=skip, limit=limit)
 
 
 @router.get("/{job_id}", response_model=JobRead)

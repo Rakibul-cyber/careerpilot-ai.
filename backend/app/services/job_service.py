@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.models.job import Job
 from app.repositories.job_repository import JobRepository
+from app.schemas.job import JobFilter
 
 
 class JobService:
@@ -19,6 +20,17 @@ class JobService:
 
     def get_job_by_id(self, db: Session, job_id: UUID) -> Job | None:
         return self.job_repository.get_by_id(db, job_id)
+
+    def search_jobs(
+        self,
+        db: Session,
+        filters: JobFilter,
+        skip: int = 0,
+        limit: int = 50,
+    ) -> list[Job]:
+        return self.job_repository.search(
+            db, filters=filters, skip=skip, limit=limit
+        )
 
     def list_jobs(
         self, db: Session, skip: int = 0, limit: int = 50

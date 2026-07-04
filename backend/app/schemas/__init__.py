@@ -11,7 +11,7 @@ from app.schemas.company import (
     CompanyUpdate,
 )
 from app.schemas.ingestion import RawJobInput
-from app.schemas.job import JobBase, JobCreate, JobRead, JobUpdate
+from app.schemas.job import JobBase, JobCreate, JobFilter, JobRead, JobUpdate
 from app.schemas.user import UserBase, UserCreate, UserRead, UserUpdate
 
 __all__ = [
@@ -29,5 +29,6 @@ __all__ = [
     "JobCreate",
     "JobUpdate",
     "JobRead",
+    "JobFilter",
     "RawJobInput",
 ]

@@ -67,3 +67,14 @@ class JobRead(JobBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class JobFilter(BaseModel):
+    """Internal filter DTO for job search. Pagination is passed separately."""
+
+    query: str | None = None
+    location: str | None = None
+    employment_type: str | None = None
+    remote_type: str | None = None
+    status: JobStatus | None = None
+    source: JobSource | None = None
