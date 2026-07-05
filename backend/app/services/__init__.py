@@ -4,6 +4,7 @@
 # services call repositories. This is the only layer that endpoints depend on.
 
 from app.services.company_service import CompanyService
+from app.services.connector_run_service import ConnectorRunService
 from app.services.job_alert_service import JobAlertService
 from app.services.job_ingestion_service import JobIngestionService
 from app.services.job_service import JobService
@@ -19,4 +20,5 @@ __all__ = [
     "JobService",
     "SavedSearchService",
     "JobAlertService",
+    "ConnectorRunService",
 ]

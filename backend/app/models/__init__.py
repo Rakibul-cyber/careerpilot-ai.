@@ -6,6 +6,7 @@
 
 from app.models.base import BaseModel
 from app.models.company import Company
+from app.models.connector_run import ConnectorRun, ConnectorRunStatus
 from app.models.job import Job, JobSource, JobStatus
 from app.models.job_alert import JobAlert, JobAlertFrequency
 from app.models.saved_search import SavedSearch
@@ -22,4 +23,6 @@ __all__ = [
     "SavedSearch",
     "JobAlert",
     "JobAlertFrequency",
+    "ConnectorRun",
+    "ConnectorRunStatus",
 ]

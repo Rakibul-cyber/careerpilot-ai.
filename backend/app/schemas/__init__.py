@@ -10,6 +10,7 @@ from app.schemas.company import (
     CompanyRead,
     CompanyUpdate,
 )
+from app.schemas.connector_run import ConnectorRunRead
 from app.schemas.ingestion import RawJobInput
 from app.schemas.job import JobBase, JobCreate, JobFilter, JobRead, JobUpdate
 from app.schemas.job_alert import (
@@ -51,4 +52,5 @@ __all__ = [
     "JobAlertCreate",
     "JobAlertUpdate",
     "JobAlertRead",
+    "ConnectorRunRead",
 ]
