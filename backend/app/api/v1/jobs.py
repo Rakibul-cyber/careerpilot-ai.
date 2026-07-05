@@ -38,8 +38,11 @@ def list_jobs(
 ) -> list[JobRead]:
     """Search jobs by optional filters, paginated.
 
-    With no ``status`` filter the result is restricted to ACTIVE jobs. Invalid
-    ``sort_by`` / ``sort_order`` fall back to ``created_at`` / ``desc``.
+    With no ``status`` filter the result is restricted to ACTIVE jobs. Text
+    ``query`` uses full-text search plus a safe ILIKE substring fallback.
+    ``sort_by`` accepts created_at / posted_at / salary_min / salary_max /
+    relevance (relevance needs a ``query``); invalid ``sort_by`` / ``sort_order``
+    fall back to ``created_at`` / ``desc``.
     """
     filters = JobFilter(
         query=query,

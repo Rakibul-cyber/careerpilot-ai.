@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models.company import Company
@@ -31,6 +31,9 @@ _SORT_COLUMNS = {
 
 # Escape char used with every ILIKE so escape_like()'s backslashes take effect.
 _LIKE_ESCAPE = "\\"
+
+# PostgreSQL text-search configuration used for the FTS vector/query.
+_FTS_CONFIG = "english"
 
 
 def _ilike_contains(column, text: str):
@@ -109,8 +112,16 @@ class JobRepository:
         status = filters.status if filters.status is not None else JobStatus.ACTIVE
         conditions.append(Job.status == status)
 
+        # Compute the tsquery once when a query is present; reused by the match
+        # branch and (for sort_by="relevance") the ranking expression.
+        tsquery = None
         if filters.query:
+            # websearch_to_tsquery is safe on arbitrary user input (it never
+            # raises), so FTS + the ILIKE branches simply OR together — ILIKE
+            # remains the substring fallback when FTS doesn't match.
+            tsquery = func.websearch_to_tsquery(_FTS_CONFIG, filters.query)
             query_branches = [
+                Job.search_vector.op("@@")(tsquery),
                 _ilike_contains(Job.description, filters.query),
                 _ilike_contains(Job.requirements, filters.query),
             ]
@@ -119,7 +130,7 @@ class JobRepository:
             normalized_query = normalize_job_title(filters.query)
             if normalized_query:
                 query_branches.insert(
-                    0, _ilike_contains(Job.normalized_title, normalized_query)
+                    1, _ilike_contains(Job.normalized_title, normalized_query)
                 )
             conditions.append(or_(*query_branches))
 
@@ -164,14 +175,26 @@ class JobRepository:
                 )
             conditions.append(or_(*company_branches))
 
-        # Whitelisted sort column + direction; invalid values fall back safely.
-        sort_column = _SORT_COLUMNS.get(filters.sort_by, Job.created_at)
-        ascending = filters.sort_order.lower() == "asc"
-        ordering = sort_column.asc() if ascending else sort_column.desc()
+        # Ordering. "relevance" ranks FTS matches (only meaningful with a query);
+        # otherwise a whitelisted column + direction, with invalid values falling
+        # back to created_at desc.
+        if filters.sort_by == "relevance":
+            if tsquery is not None:
+                ordering = [
+                    func.ts_rank_cd(Job.search_vector, tsquery).desc(),
+                    Job.created_at.desc(),
+                ]
+            else:
+                ordering = [Job.created_at.desc()]
+        else:
+            sort_column = _SORT_COLUMNS.get(filters.sort_by, Job.created_at)
+            ascending = filters.sort_order.lower() == "asc"
+            direction = sort_column.asc() if ascending else sort_column.desc()
+            ordering = [direction.nullslast()]
 
         stmt = (
             stmt.where(*conditions)
-            .order_by(ordering.nullslast())
+            .order_by(*ordering)
             .offset(skip)
             .limit(limit)
         )

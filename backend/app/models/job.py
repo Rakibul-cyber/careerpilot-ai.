@@ -19,7 +19,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -74,6 +74,13 @@ class Job(BaseModel, Base):
             "location",
             postgresql_using="gin",
             postgresql_ops={"location": "gin_trgm_ops"},
+        ),
+        # Full-text search index over the trigger-maintained search_vector
+        # (created via migration a3d134ee3d15).
+        Index(
+            "ix_jobs_search_vector_gin",
+            "search_vector",
+            postgresql_using="gin",
         ),
     )
 
@@ -142,5 +149,9 @@ class Job(BaseModel, Base):
     last_verified_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+    # Full-text search vector, maintained entirely by a DB trigger — never set
+    # from application code, and never exposed in API schemas.
+    search_vector: Mapped[str | None] = mapped_column(TSVECTOR, nullable=True)
 
     company = relationship("Company")

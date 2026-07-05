@@ -97,3 +97,97 @@ What matters for this milestone is that:
 - **Next milestone (26)**: PostgreSQL Full-Text Search (`tsvector` / `tsquery`
   with ranking) will build a relevance-ranked engine on top of this foundation;
   trigram search remains ideal for fuzzy / typo-tolerant substring matching.
+
+---
+
+## Full-Text Search Foundation
+
+Milestone 26 adds PostgreSQL full-text search (FTS) alongside the trigram
+substring search, so results can be **relevance-ranked** rather than only
+filtered.
+
+### What `search_vector` stores
+
+`jobs.search_vector` is a `tsvector` — the tokenized, stemmed, weighted
+representation of a job's searchable text. It combines five columns with
+positional **weights**:
+
+| Weight | Columns |
+| --- | --- |
+| `A` (highest) | `title`, `normalized_title` |
+| `B` | `description`, `requirements` |
+| `C` (lowest) | `location` |
+
+It is built with the `english` text-search config (stemming, stop-word removal)
+via:
+
+```sql
+setweight(to_tsvector('english', coalesce(title, '')), 'A') || ... || setweight(..., 'C')
+```
+
+#### Why a trigger (not a generated column)?
+
+The column is kept up to date by a `BEFORE INSERT OR UPDATE` trigger
+(`jobs_search_vector_trigger` → `jobs_search_vector_update()`), so application
+code never sets it. A trigger was chosen over a `GENERATED ALWAYS AS ... STORED`
+column because it is more portable across Postgres versions and plays nicely
+with Alembic (plain column + explicit trigger, easy to audit and reverse). The
+migration also backfills existing rows.
+
+A GIN index (`ix_jobs_search_vector_gin`) over the vector makes `@@` matching and
+ranking index-assisted.
+
+### Why weights are used
+
+Weights let ranking reflect *where* a term matched. A job whose **title** is
+"Flutter Developer" is a stronger match for `flutter` than one that merely
+mentions flutter in its **description**. `ts_rank_cd(search_vector, query)` uses
+the A/B/C weights so title matches outrank description-only matches.
+
+### Why FTS is added *alongside* trigram search
+
+They solve different problems and complement each other:
+
+- **FTS** — word-aware, stemmed, ranked. Great for natural queries
+  (`python backend`, `senior flutter developer`) and relevance ordering. It does
+  **not** match arbitrary substrings (searching `ackend` will not find
+  `backend`).
+- **Trigram / ILIKE** — literal substring matching, typo/partial friendly, but
+  unranked.
+
+`JobRepository.search` therefore **ORs an FTS branch with the existing ILIKE
+branches**: `search_vector @@ websearch_to_tsquery('english', query)` OR
+`normalized_title/description/requirements ILIKE '%query%'`. FTS supplies
+relevance and word matching; ILIKE remains the substring fallback, so no query
+that worked before stops working. `websearch_to_tsquery` is used because it
+never raises on arbitrary user input (unlike `to_tsquery`), so special
+characters can't break search.
+
+### When relevance sorting is useful
+
+Pass `sort_by=relevance` (with a `query`) to order by `ts_rank_cd` descending,
+tie-broken by `created_at desc`. Use it for the main "search" experience where
+the best textual match should come first. Without a query, `relevance` falls
+back to `created_at desc`. All other sort fields (`created_at`, `posted_at`,
+`salary_min`, `salary_max`) are unchanged, and the default remains
+`created_at desc`.
+
+### Benchmark
+
+`EXPLAIN ANALYZE` on
+`search_vector @@ websearch_to_tsquery('english', 'flutter developer')` over
+~6,000 rows uses a `Bitmap Index Scan on ix_jobs_search_vector_gin` when the
+planner is allowed to (e.g. with `enable_seqscan = off`). As with the trigram
+indexes, on a small table the default planner still prefers a sequential scan —
+that's expected; the index wins at scale.
+
+### Future path
+
+- **Ranking tuning** — custom weight vectors (`ts_rank_cd(weights, ...)`),
+  `setweight` adjustments, cover-density vs. term-frequency ranking.
+- **Headline snippets** — `ts_headline(...)` to return highlighted match
+  fragments in API responses.
+- **Language config** — per-job / per-user language instead of hard-coded
+  `english`; a `regconfig` column feeding `to_tsvector`.
+- **Hybrid FTS + embeddings** — combine lexical FTS ranking with semantic
+  vector similarity (pgvector) for AI-powered job matching (later milestone).
