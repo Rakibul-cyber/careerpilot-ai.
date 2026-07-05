@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Background scheduler. Disabled by default so local/dev and test runs don't
+    # spawn background jobs; enable explicitly via env in deployments.
+    SCHEDULER_ENABLED: bool = False
+    SCHEDULER_TIMEZONE: str = "Europe/Berlin"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

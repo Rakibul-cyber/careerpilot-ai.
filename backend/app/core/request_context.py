@@ -15,10 +15,31 @@ from starlette.requests import Request
 # Current request id, or None when no request is in scope (e.g. scripts, startup).
 _request_id_ctx: ContextVar[str | None] = ContextVar("request_id", default=None)
 
+# Current execution id, set by scheduled/background jobs (no HTTP request scope)
+# so their logs are correlatable the way requests are.
+_execution_id_ctx: ContextVar[str | None] = ContextVar(
+    "execution_id", default=None
+)
+
 
 def get_request_id() -> str | None:
     """Return the current request id, or None if not in a request scope."""
     return _request_id_ctx.get()
+
+
+def get_execution_id() -> str | None:
+    """Return the current execution id, or None if not in a scheduled job."""
+    return _execution_id_ctx.get()
+
+
+def set_execution_id(execution_id: str):
+    """Set the current execution id; returns the token to reset() it afterward."""
+    return _execution_id_ctx.set(execution_id)
+
+
+def reset_execution_id(token) -> None:
+    """Restore the execution id to its previous value using set()'s token."""
+    _execution_id_ctx.reset(token)
 
 
 class RequestIDMiddleware(BaseHTTPMiddleware):

@@ -9,20 +9,22 @@ import logging
 import sys
 
 from app.core.config import settings
-from app.core.request_context import get_request_id
+from app.core.request_context import get_execution_id, get_request_id
 
 _ROOT_LOGGER_NAME = "app"
 _configured = False
 
 
 class RequestIdFormatter(logging.Formatter):
-    """Formatter that stamps each record with the current request id."""
+    """Formatter that stamps each record with the request and execution ids."""
 
     def format(self, record: logging.LogRecord) -> str:
         # Read from the context at format time so it always reflects the record's
-        # request, and never crashes when no request is in scope.
+        # scope, and never crashes when no request/execution is active.
         if not hasattr(record, "request_id"):
             record.request_id = get_request_id() or "-"
+        if not hasattr(record, "execution_id"):
+            record.execution_id = get_execution_id() or "-"
         return super().format(record)
 
 
@@ -37,7 +39,7 @@ def configure_logging() -> None:
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(
         RequestIdFormatter(
-            fmt="%(asctime)s %(levelname)s %(name)s request_id=%(request_id)s %(message)s",
+            fmt="%(asctime)s %(levelname)s %(name)s request_id=%(request_id)s execution_id=%(execution_id)s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
     )
