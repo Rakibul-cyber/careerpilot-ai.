@@ -13,6 +13,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -47,6 +48,32 @@ class Job(BaseModel, Base):
     __table_args__ = (
         UniqueConstraint(
             "source", "external_id", name="uq_jobs_source_external_id"
+        ),
+        # GIN trigram indexes backing the ILIKE '%...%' matches in
+        # JobRepository.search (created via migration 8c18594ccbc3).
+        Index(
+            "ix_jobs_normalized_title_trgm",
+            "normalized_title",
+            postgresql_using="gin",
+            postgresql_ops={"normalized_title": "gin_trgm_ops"},
+        ),
+        Index(
+            "ix_jobs_description_trgm",
+            "description",
+            postgresql_using="gin",
+            postgresql_ops={"description": "gin_trgm_ops"},
+        ),
+        Index(
+            "ix_jobs_requirements_trgm",
+            "requirements",
+            postgresql_using="gin",
+            postgresql_ops={"requirements": "gin_trgm_ops"},
+        ),
+        Index(
+            "ix_jobs_location_trgm",
+            "location",
+            postgresql_using="gin",
+            postgresql_ops={"location": "gin_trgm_ops"},
         ),
     )
 

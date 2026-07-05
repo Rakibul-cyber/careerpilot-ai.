@@ -33,6 +33,15 @@ _SORT_COLUMNS = {
 _LIKE_ESCAPE = "\\"
 
 
+def _ilike_contains(column, text: str):
+    """Build a literal, wildcard-escaped case-insensitive contains match.
+
+    Centralizes the escape + '%...%' pattern so every text filter is built the
+    same safe way and trigram-index-friendly.
+    """
+    return column.ilike(f"%{escape_like(text)}%", escape=_LIKE_ESCAPE)
+
+
 class JobRepository:
     """Persistence operations for :class:`Job`."""
 
@@ -101,29 +110,21 @@ class JobRepository:
         conditions.append(Job.status == status)
 
         if filters.query:
-            escaped_query = escape_like(filters.query)
             query_branches = [
-                Job.description.ilike(f"%{escaped_query}%", escape=_LIKE_ESCAPE),
-                Job.requirements.ilike(f"%{escaped_query}%", escape=_LIKE_ESCAPE),
+                _ilike_contains(Job.description, filters.query),
+                _ilike_contains(Job.requirements, filters.query),
             ]
             # Only match normalized_title when the query normalizes to something;
             # otherwise "%%" would match every row (e.g. query="remote").
             normalized_query = normalize_job_title(filters.query)
             if normalized_query:
                 query_branches.insert(
-                    0,
-                    Job.normalized_title.ilike(
-                        f"%{escape_like(normalized_query)}%", escape=_LIKE_ESCAPE
-                    ),
+                    0, _ilike_contains(Job.normalized_title, normalized_query)
                 )
             conditions.append(or_(*query_branches))
 
         if filters.location:
-            conditions.append(
-                Job.location.ilike(
-                    f"%{escape_like(filters.location)}%", escape=_LIKE_ESCAPE
-                )
-            )
+            conditions.append(_ilike_contains(Job.location, filters.location))
 
         if filters.employment_type:
             conditions.append(Job.employment_type == filters.employment_type)
@@ -155,18 +156,11 @@ class JobRepository:
 
         if filters.company:
             stmt = stmt.join(Company, Job.company_id == Company.id)
-            company_branches = [
-                Company.name.ilike(
-                    f"%{escape_like(filters.company)}%", escape=_LIKE_ESCAPE
-                )
-            ]
+            company_branches = [_ilike_contains(Company.name, filters.company)]
             normalized_company = normalize_company_name(filters.company)
             if normalized_company:
                 company_branches.append(
-                    Company.normalized_name.ilike(
-                        f"%{escape_like(normalized_company)}%",
-                        escape=_LIKE_ESCAPE,
-                    )
+                    _ilike_contains(Company.normalized_name, normalized_company)
                 )
             conditions.append(or_(*company_branches))
 
