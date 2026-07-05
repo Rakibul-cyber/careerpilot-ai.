@@ -9,11 +9,14 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
+from app.core.logging import get_logger
 from app.models.job import Job, JobStatus
 from app.repositories.job_repository import JobRepository
 from app.schemas.ingestion import RawJobInput
 from app.services.company_service import CompanyService
 from app.utils.normalization import normalize_job_title
+
+logger = get_logger(__name__)
 
 
 class JobIngestionService:
@@ -55,6 +58,12 @@ class JobIngestionService:
                 existing.expires_at = raw_job.expires_at
                 existing.last_verified_at = now
                 existing.status = JobStatus.ACTIVE
+                logger.info(
+                    "Job deduplicated job_id=%s source=%s external_id=%s",
+                    existing.id,
+                    raw_job.source.value,
+                    raw_job.external_id,
+                )
                 return self.job_repository.update(db, existing)
 
         job = Job(
@@ -77,4 +86,11 @@ class JobIngestionService:
             last_verified_at=now,
             status=JobStatus.ACTIVE,
         )
-        return self.job_repository.create(db, job)
+        created = self.job_repository.create(db, job)
+        logger.info(
+            "Job ingested job_id=%s source=%s external_id=%s",
+            created.id,
+            raw_job.source.value,
+            raw_job.external_id,
+        )
+        return created

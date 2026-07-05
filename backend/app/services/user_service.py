@@ -8,10 +8,13 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.core.logging import get_logger
 from app.core.security import hash_password, verify_password
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate, UserUpdate
+
+logger = get_logger(__name__)
 
 
 class UserService:
@@ -26,8 +29,10 @@ class UserService:
 
     def create_user(self, db: Session, user_create: UserCreate) -> User:
         email = user_create.email.strip().lower()
+        logger.info("Creating user email=%s", email)
 
         if self.user_repository.get_by_email(db, email) is not None:
+            logger.info("User creation rejected, email exists email=%s", email)
             raise ValueError("User with this email already exists")
 
         user = User(
@@ -35,7 +40,9 @@ class UserService:
             full_name=user_create.full_name,
             hashed_password=hash_password(user_create.password),
         )
-        return self.user_repository.create(db, user)
+        created = self.user_repository.create(db, user)
+        logger.info("User created user_id=%s email=%s", created.id, email)
+        return created
 
     def update_user(
         self, db: Session, user: User, user_update: UserUpdate
@@ -67,13 +74,20 @@ class UserService:
         Returns None for unknown email, inactive account, passwordless
         (OAuth-only) account, or an incorrect password.
         """
-        user = self.user_repository.get_by_email(db, email.strip().lower())
+        normalized_email = email.strip().lower()
+        logger.info("Authenticating user email=%s", normalized_email)
+        user = self.user_repository.get_by_email(db, normalized_email)
         if user is None:
+            logger.info("Authentication failed, unknown email=%s", normalized_email)
             return None
         if not user.is_active:
+            logger.info("Authentication failed, inactive user_id=%s", user.id)
             return None
         if not user.hashed_password:
+            logger.info("Authentication failed, no password user_id=%s", user.id)
             return None
         if not verify_password(password, user.hashed_password):
+            logger.info("Authentication failed, bad password user_id=%s", user.id)
             return None
+        logger.info("User authenticated user_id=%s", user.id)
         return user

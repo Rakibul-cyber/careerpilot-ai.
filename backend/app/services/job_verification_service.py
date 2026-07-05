@@ -10,8 +10,11 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
+from app.core.logging import get_logger
 from app.models.job import Job, JobStatus
 from app.repositories.job_repository import JobRepository
+
+logger = get_logger(__name__)
 
 
 class JobVerificationService:
@@ -57,7 +60,9 @@ class JobVerificationService:
         candidates = self.job_repository.list_expired_jobs(
             db, now=now, limit=limit
         )
-        return [self.mark_expired(db, job) for job in candidates]
+        expired = [self.mark_expired(db, job) for job in candidates]
+        logger.info("Expired jobs past deadline count=%d", len(expired))
+        return expired
 
     def archive_old_expired_jobs(
         self,
@@ -70,4 +75,6 @@ class JobVerificationService:
         candidates = self.job_repository.list_jobs_for_archival(
             db, older_than=older_than, limit=limit
         )
-        return [self.mark_archived(db, job) for job in candidates]
+        archived = [self.mark_archived(db, job) for job in candidates]
+        logger.info("Archived old expired jobs count=%d", len(archived))
+        return archived

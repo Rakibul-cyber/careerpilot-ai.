@@ -11,9 +11,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.connectors.base import BaseJobSourceConnector
+from app.core.logging import get_logger
 from app.models.connector_run import ConnectorRunStatus
 from app.services.connector_run_service import ConnectorRunService
 from app.services.job_ingestion_service import JobIngestionService
+
+logger = get_logger(__name__)
 
 
 class ConnectorRunResult(BaseModel):
@@ -47,6 +50,7 @@ class ConnectorRunner:
         On failure the run is marked FAILED with the error and whatever partial
         counts were reached; the exception is swallowed (not re-raised).
         """
+        logger.info("Running connector %s", connector.source_name)
         run = self.connector_run_service.start_run(db, connector.source_name)
 
         fetched_count = 0
@@ -64,6 +68,12 @@ class ConnectorRunner:
             self.connector_run_service.mark_success(
                 db, run, fetched_count=fetched_count, ingested_count=ingested_count
             )
+            logger.info(
+                "Connector completed connector=%s fetched=%d ingested=%d",
+                connector.source_name,
+                fetched_count,
+                ingested_count,
+            )
             return ConnectorRunResult(
                 run_id=run.id,
                 connector_name=connector.source_name,
@@ -79,6 +89,12 @@ class ConnectorRunner:
             # committed per-job, so they survive this rollback.
             db.rollback()
             error_message = f"{type(exc).__name__}: {exc}"
+            logger.exception(
+                "Connector failed connector=%s fetched=%d ingested=%d",
+                connector.source_name,
+                fetched_count,
+                ingested_count,
+            )
             self.connector_run_service.mark_failed(
                 db,
                 run,

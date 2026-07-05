@@ -8,8 +8,11 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.core.logging import get_logger
 from app.models.connector_run import ConnectorRun, ConnectorRunStatus
 from app.repositories.connector_run_repository import ConnectorRunRepository
+
+logger = get_logger(__name__)
 
 
 class ConnectorRunService:
@@ -27,7 +30,13 @@ class ConnectorRunService:
             status=ConnectorRunStatus.RUNNING,
             started_at=datetime.now(timezone.utc),
         )
-        return self.connector_run_repository.create(db, run)
+        created = self.connector_run_repository.create(db, run)
+        logger.info(
+            "Connector run started run_id=%s connector=%s",
+            created.id,
+            connector_name,
+        )
+        return created
 
     def mark_success(
         self,
@@ -41,7 +50,15 @@ class ConnectorRunService:
         run.fetched_count = fetched_count
         run.ingested_count = ingested_count
         run.finished_at = datetime.now(timezone.utc)
-        return self.connector_run_repository.update(db, run)
+        updated = self.connector_run_repository.update(db, run)
+        logger.info(
+            "ConnectorRun SUCCESS run_id=%s connector=%s fetched=%d ingested=%d",
+            updated.id,
+            updated.connector_name,
+            fetched_count,
+            ingested_count,
+        )
+        return updated
 
     def mark_failed(
         self,
@@ -57,7 +74,16 @@ class ConnectorRunService:
         run.ingested_count = ingested_count
         run.error_message = error_message
         run.finished_at = datetime.now(timezone.utc)
-        return self.connector_run_repository.update(db, run)
+        updated = self.connector_run_repository.update(db, run)
+        logger.error(
+            "ConnectorRun FAILED run_id=%s connector=%s fetched=%d ingested=%d error=%s",
+            updated.id,
+            updated.connector_name,
+            fetched_count,
+            ingested_count,
+            error_message,
+        )
+        return updated
 
     def get_run(self, db: Session, run_id: UUID) -> ConnectorRun | None:
         return self.connector_run_repository.get_by_id(db, run_id)

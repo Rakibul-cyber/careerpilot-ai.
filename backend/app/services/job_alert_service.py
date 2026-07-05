@@ -10,6 +10,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.core.logging import get_logger
 from app.models.job import Job
 from app.models.job_alert import JobAlert, JobAlertFrequency
 from app.repositories.job_alert_repository import JobAlertRepository
@@ -17,6 +18,8 @@ from app.schemas.job import JobFilter
 from app.schemas.job_alert import JobAlertCreate, JobAlertUpdate
 from app.services.job_service import JobService
 from app.services.saved_search_service import SavedSearchService
+
+logger = get_logger(__name__)
 
 # How far ahead to schedule the next run, per frequency.
 _FREQUENCY_INTERVALS = {
@@ -100,6 +103,11 @@ class JobAlertService:
 
     def run_alert(self, db: Session, alert: JobAlert) -> list[Job]:
         """Run one alert: search its saved filter, record results, reschedule."""
+        logger.info(
+            "Job alert executing alert_id=%s saved_search_id=%s",
+            alert.id,
+            alert.saved_search_id,
+        )
         saved_search = alert.saved_search
         filters = JobFilter(
             query=saved_search.query,
@@ -119,6 +127,12 @@ class JobAlertService:
         alert.next_run_at = now + _FREQUENCY_INTERVALS[alert.frequency]
         self.job_alert_repository.update(db, alert)
 
+        logger.info(
+            "Job alert executed alert_id=%s matches=%d next_run_at=%s",
+            alert.id,
+            len(matches),
+            alert.next_run_at.isoformat(),
+        )
         return matches
 
     def run_due_alerts(
