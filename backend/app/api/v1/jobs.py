@@ -25,15 +25,21 @@ def list_jobs(
     remote_type: str | None = None,
     status: JobStatus | None = None,
     source: JobSource | None = None,
+    company: str | None = None,
+    salary_min: int | None = Query(None, ge=0),
+    salary_max: int | None = Query(None, ge=0),
+    sort_by: str = Query("created_at"),
+    sort_order: str = Query("desc"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
     job_service: JobService = Depends(get_job_service),
     current_user: User = Depends(get_current_user),
 ) -> list[JobRead]:
-    """Search jobs by optional filters (newest first), paginated.
+    """Search jobs by optional filters, paginated.
 
-    With no ``status`` filter the result is restricted to ACTIVE jobs.
+    With no ``status`` filter the result is restricted to ACTIVE jobs. Invalid
+    ``sort_by`` / ``sort_order`` fall back to ``created_at`` / ``desc``.
     """
     filters = JobFilter(
         query=query,
@@ -42,6 +48,11 @@ def list_jobs(
         remote_type=remote_type,
         status=status,
         source=source,
+        company=company,
+        salary_min=salary_min,
+        salary_max=salary_max,
+        sort_by=sort_by,
+        sort_order=sort_order,
     )
     return job_service.search_jobs(db, filters=filters, skip=skip, limit=limit)
 

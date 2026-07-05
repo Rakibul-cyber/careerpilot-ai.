@@ -15,9 +15,22 @@ from uuid import UUID
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from app.models.company import Company
 from app.models.job import Job, JobSource, JobStatus
 from app.schemas.job import JobFilter
-from app.utils.normalization import normalize_job_title
+from app.utils.normalization import normalize_company_name, normalize_job_title
+from app.utils.search import escape_like
+
+# Whitelisted sort columns; anything else falls back to created_at.
+_SORT_COLUMNS = {
+    "created_at": Job.created_at,
+    "posted_at": Job.posted_at,
+    "salary_min": Job.salary_min,
+    "salary_max": Job.salary_max,
+}
+
+# Escape char used with every ILIKE so escape_like()'s backslashes take effect.
+_LIKE_ESCAPE = "\\"
 
 
 class JobRepository:
@@ -76,10 +89,11 @@ class JobRepository:
         skip: int = 0,
         limit: int = 50,
     ) -> list[Job]:
-        """Search live jobs by the given filters, newest first.
+        """Search live jobs by the given filters.
 
         Status defaults to ACTIVE when the caller doesn't specify one, so the
-        default listing never surfaces expired/archived/duplicate jobs.
+        default listing never surfaces expired/archived/duplicate jobs. All text
+        matches are literal (LIKE wildcards escaped) and sorting is whitelisted.
         """
         conditions = [Job.deleted_at.is_(None)]
 
@@ -87,17 +101,29 @@ class JobRepository:
         conditions.append(Job.status == status)
 
         if filters.query:
+            escaped_query = escape_like(filters.query)
+            query_branches = [
+                Job.description.ilike(f"%{escaped_query}%", escape=_LIKE_ESCAPE),
+                Job.requirements.ilike(f"%{escaped_query}%", escape=_LIKE_ESCAPE),
+            ]
+            # Only match normalized_title when the query normalizes to something;
+            # otherwise "%%" would match every row (e.g. query="remote").
             normalized_query = normalize_job_title(filters.query)
-            conditions.append(
-                or_(
-                    Job.normalized_title.ilike(f"%{normalized_query}%"),
-                    Job.description.ilike(f"%{filters.query}%"),
-                    Job.requirements.ilike(f"%{filters.query}%"),
+            if normalized_query:
+                query_branches.insert(
+                    0,
+                    Job.normalized_title.ilike(
+                        f"%{escape_like(normalized_query)}%", escape=_LIKE_ESCAPE
+                    ),
                 )
-            )
+            conditions.append(or_(*query_branches))
 
         if filters.location:
-            conditions.append(Job.location.ilike(f"%{filters.location}%"))
+            conditions.append(
+                Job.location.ilike(
+                    f"%{escape_like(filters.location)}%", escape=_LIKE_ESCAPE
+                )
+            )
 
         if filters.employment_type:
             conditions.append(Job.employment_type == filters.employment_type)
@@ -108,10 +134,50 @@ class JobRepository:
         if filters.source:
             conditions.append(Job.source == filters.source)
 
+        if filters.salary_min is not None:
+            # Keep jobs with unknown upper salary rather than excluding them.
+            conditions.append(
+                or_(
+                    Job.salary_max >= filters.salary_min,
+                    Job.salary_max.is_(None),
+                )
+            )
+
+        if filters.salary_max is not None:
+            conditions.append(
+                or_(
+                    Job.salary_min <= filters.salary_max,
+                    Job.salary_min.is_(None),
+                )
+            )
+
+        stmt = select(Job)
+
+        if filters.company:
+            stmt = stmt.join(Company, Job.company_id == Company.id)
+            company_branches = [
+                Company.name.ilike(
+                    f"%{escape_like(filters.company)}%", escape=_LIKE_ESCAPE
+                )
+            ]
+            normalized_company = normalize_company_name(filters.company)
+            if normalized_company:
+                company_branches.append(
+                    Company.normalized_name.ilike(
+                        f"%{escape_like(normalized_company)}%",
+                        escape=_LIKE_ESCAPE,
+                    )
+                )
+            conditions.append(or_(*company_branches))
+
+        # Whitelisted sort column + direction; invalid values fall back safely.
+        sort_column = _SORT_COLUMNS.get(filters.sort_by, Job.created_at)
+        ascending = filters.sort_order.lower() == "asc"
+        ordering = sort_column.asc() if ascending else sort_column.desc()
+
         stmt = (
-            select(Job)
-            .where(*conditions)
-            .order_by(Job.created_at.desc())
+            stmt.where(*conditions)
+            .order_by(ordering.nullslast())
             .offset(skip)
             .limit(limit)
         )

@@ -78,3 +78,8 @@ class JobFilter(BaseModel):
     remote_type: str | None = None
     status: JobStatus | None = None
     source: JobSource | None = None
+    company: str | None = None
+    salary_min: int | None = None
+    salary_max: int | None = None
+    sort_by: str = "created_at"
+    sort_order: str = "desc"
