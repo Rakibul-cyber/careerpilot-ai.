@@ -16,9 +16,13 @@ from app.models.resume import Resume, ResumeExtractionStatus, ResumeFileType
 from app.models.resume_profile import ResumeParseStatus, ResumeProfile
 from app.models.saved_search import SavedSearch
 from app.models.user import User, UserRole
+from app.models.application import Application, ApplicationSource, ApplicationStatus
 
 __all__ = [
     "BaseModel",
+    "Application",
+    "ApplicationStatus",
+    "ApplicationSource",
     "User",
     "UserRole",
     "Company",

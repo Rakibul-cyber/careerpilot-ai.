@@ -3,6 +3,7 @@
 # stable interface so services never touch SQLAlchemy directly. This keeps the
 # storage engine swappable and makes the business layer trivially unit-testable.
 
+from app.repositories.application_repository import ApplicationRepository
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.connector_run_repository import ConnectorRunRepository
 from app.repositories.cover_letter_repository import CoverLetterRepository
@@ -22,6 +23,7 @@ from app.repositories.user_repository import UserRepository
 
 __all__ = [
     "UserRepository",
+    "ApplicationRepository",
     "CompanyRepository",
     "JobRepository",
     "SavedSearchRepository",

@@ -6,6 +6,7 @@
 # new model. The ``# noqa: F401`` marks the imports as intentional side effects.
 
 from app.db.base import Base
+from app.models.application import Application  # noqa: F401
 from app.models.company import Company  # noqa: F401
 from app.models.connector_run import ConnectorRun  # noqa: F401
 from app.models.cover_letter import CoverLetter  # noqa: F401
