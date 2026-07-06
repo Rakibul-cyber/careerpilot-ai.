@@ -19,9 +19,23 @@ from fastapi import (
 )
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db, get_resume_service
+from app.api.deps import (
+    get_current_user,
+    get_db,
+    get_resume_parser_service,
+    get_resume_service,
+)
 from app.models.user import User
 from app.schemas.resume import ResumeRead, ResumeTextRead
+from app.schemas.resume_profile import (
+    ResumeProfileParseResponse,
+    ResumeProfileRead,
+)
+from app.services.resume_parser_service import (
+    ResumeNotFoundError,
+    ResumeNotParsableError,
+    ResumeParserService,
+)
 from app.services.resume_service import (
     FileTooLargeError,
     ResumeService,
@@ -97,6 +111,57 @@ def get_resume_text(
             status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found"
         )
     return resume
+
+
+@router.post(
+    "/{resume_id}/parse", response_model=ResumeProfileParseResponse
+)
+def parse_resume(
+    resume_id: UUID,
+    db: Session = Depends(get_db),
+    parser: ResumeParserService = Depends(get_resume_parser_service),
+    current_user: User = Depends(get_current_user),
+) -> ResumeProfileParseResponse:
+    """Parse a completed resume into a structured profile (AI-backed, upsert).
+
+    Returns 200 with the outcome even when the AI parse fails — the profile is
+    persisted with parse_status=failed and the reason in parse_error. Only
+    precondition failures surface as errors: unknown/cross-user resume -> 404,
+    resume not yet extracted (or no text) -> 409.
+    """
+    try:
+        profile = parser.parse_resume(db, current_user.id, resume_id)
+    except ResumeNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found"
+        )
+    except ResumeNotParsableError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
+        )
+    return ResumeProfileParseResponse(
+        resume_id=profile.resume_id,
+        parse_status=profile.parse_status,
+        parse_error=profile.parse_error,
+        profile=ResumeProfileRead.model_validate(profile),
+    )
+
+
+@router.get("/{resume_id}/profile", response_model=ResumeProfileRead)
+def get_resume_profile(
+    resume_id: UUID,
+    db: Session = Depends(get_db),
+    parser: ResumeParserService = Depends(get_resume_parser_service),
+    current_user: User = Depends(get_current_user),
+) -> ResumeProfileRead:
+    """Fetch the parsed profile for one of the current user's resumes."""
+    profile = parser.get_profile_by_resume(db, current_user.id, resume_id)
+    if profile is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resume profile not found",
+        )
+    return profile
 
 
 @router.post("/{resume_id}/primary", response_model=ResumeRead)

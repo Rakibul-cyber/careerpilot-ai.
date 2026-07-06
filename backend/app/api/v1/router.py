@@ -8,6 +8,7 @@ from app.api.v1 import (
     companies,
     job_alerts,
     jobs,
+    resume_profiles,
     resumes,
     saved_searches,
     users,
@@ -23,3 +24,4 @@ api_router.include_router(jobs.router)
 api_router.include_router(saved_searches.router)
 api_router.include_router(job_alerts.router)
 api_router.include_router(resumes.router)
+api_router.include_router(resume_profiles.router)

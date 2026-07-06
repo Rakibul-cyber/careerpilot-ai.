@@ -10,6 +10,7 @@ from app.models.connector_run import ConnectorRun, ConnectorRunStatus
 from app.models.job import Job, JobSource, JobStatus
 from app.models.job_alert import JobAlert, JobAlertFrequency
 from app.models.resume import Resume, ResumeExtractionStatus, ResumeFileType
+from app.models.resume_profile import ResumeParseStatus, ResumeProfile
 from app.models.saved_search import SavedSearch
 from app.models.user import User, UserRole
 
@@ -29,4 +30,6 @@ __all__ = [
     "Resume",
     "ResumeFileType",
     "ResumeExtractionStatus",
+    "ResumeProfile",
+    "ResumeParseStatus",
 ]

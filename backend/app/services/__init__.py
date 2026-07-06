@@ -9,6 +9,7 @@ from app.services.job_alert_service import JobAlertService
 from app.services.job_ingestion_service import JobIngestionService
 from app.services.job_service import JobService
 from app.services.job_verification_service import JobVerificationService
+from app.services.resume_parser_service import ResumeParserService
 from app.services.resume_service import ResumeService
 from app.services.resume_text_extraction_service import (
     ResumeTextExtractionService,
@@ -27,4 +28,5 @@ __all__ = [
     "ConnectorRunService",
     "ResumeService",
     "ResumeTextExtractionService",
+    "ResumeParserService",
 ]

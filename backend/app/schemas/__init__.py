@@ -20,6 +20,11 @@ from app.schemas.job_alert import (
     JobAlertUpdate,
 )
 from app.schemas.resume import ResumeRead, ResumeTextRead
+from app.schemas.resume_profile import (
+    ResumeProfileAIOutput,
+    ResumeProfileParseResponse,
+    ResumeProfileRead,
+)
 from app.schemas.saved_search import (
     SavedSearchBase,
     SavedSearchCreate,
@@ -56,4 +61,7 @@ __all__ = [
     "ConnectorRunRead",
     "ResumeRead",
     "ResumeTextRead",
+    "ResumeProfileRead",
+    "ResumeProfileParseResponse",
+    "ResumeProfileAIOutput",
 ]

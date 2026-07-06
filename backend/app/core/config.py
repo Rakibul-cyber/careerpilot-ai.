@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "uploads"
     MAX_RESUME_UPLOAD_MB: int = 5
 
+    # AI resume parsing (Anthropic Claude). ANTHROPIC_API_KEY is optional at
+    # startup — the parser fails cleanly (parse_status=failed) if it's unset,
+    # so the app still boots for everything else.
+    ANTHROPIC_API_KEY: str | None = None
+    ANTHROPIC_MODEL: str = "claude-opus-4-8"
+    AI_PARSER_MAX_TOKENS: int = 4096
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
