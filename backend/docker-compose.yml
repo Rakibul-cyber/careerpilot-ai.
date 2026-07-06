@@ -17,7 +17,10 @@ services:
       - .:/app
 
   db:
-    image: postgres:16
+    # pgvector/pgvector:pg16 is the official Postgres 16 image bundled with the
+    # pgvector extension (needed for semantic search, M31). Same data format as
+    # postgres:16, so the postgres_data volume carries over unchanged.
+    image: pgvector/pgvector:pg16
     container_name: careerpilot_postgres
     environment:
       POSTGRES_DB: careerpilot

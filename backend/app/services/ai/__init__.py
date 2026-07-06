@@ -8,6 +8,10 @@ from app.services.ai.base_cover_letter_client import (
     AICoverLetterClient,
     CoverLetterAIError,
 )
+from app.services.ai.base_embedding_client import (
+    AIEmbeddingClient,
+    EmbeddingAIError,
+)
 from app.services.ai.resume_parser_client import (
     AIParserError,
     AIResumeParserClient,
@@ -18,4 +22,6 @@ __all__ = [
     "AIParserError",
     "AICoverLetterClient",
     "CoverLetterAIError",
+    "AIEmbeddingClient",
+    "EmbeddingAIError",
 ]

@@ -18,8 +18,12 @@ from app.schemas.auth import TokenPayload
 from app.services.company_service import CompanyService
 from app.services.cover_letter_service import CoverLetterService
 from app.services.job_alert_service import JobAlertService
+from app.services.job_embedding_service import JobEmbeddingService
 from app.services.job_match_service import JobMatchService
 from app.services.job_service import JobService
+from app.services.semantic_job_search_service import (
+    SemanticJobSearchService,
+)
 from app.services.resume_parser_service import ResumeParserService
 from app.services.resume_service import ResumeService
 from app.services.saved_search_service import SavedSearchService
@@ -62,6 +66,14 @@ def get_job_match_service() -> JobMatchService:
 
 def get_cover_letter_service() -> CoverLetterService:
     return CoverLetterService()
+
+
+def get_job_embedding_service() -> JobEmbeddingService:
+    return JobEmbeddingService()
+
+
+def get_semantic_job_search_service() -> SemanticJobSearchService:
+    return SemanticJobSearchService()
 
 
 def get_current_user(

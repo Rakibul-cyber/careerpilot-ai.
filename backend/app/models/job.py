@@ -19,12 +19,18 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.models.base import BaseModel
 from app.models.company import Company  # noqa: F401  (registers "Company" mapper)
+
+# Embedding dimension. Fixed to the chosen model (OpenAI text-embedding-3-small
+# -> 1536). Must stay in sync with settings.EMBEDDING_DIMENSIONS and the
+# migration; changing it requires a re-embed + migration.
+JOB_EMBEDDING_DIM = 1536
 
 
 class JobSource(str, enum.Enum):
@@ -41,6 +47,12 @@ class JobStatus(str, enum.Enum):
     EXPIRED = "expired"
     DUPLICATE = "duplicate"
     ARCHIVED = "archived"
+
+
+class JobEmbeddingStatus(str, enum.Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 class Job(BaseModel, Base):
@@ -81,6 +93,15 @@ class Job(BaseModel, Base):
             "ix_jobs_search_vector_gin",
             "search_vector",
             postgresql_using="gin",
+        ),
+        # HNSW index over the embedding for cosine-distance semantic search
+        # (created via migration a1c47f9e2d38). A single, simple index — no
+        # tuning beyond defaults.
+        Index(
+            "ix_jobs_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
         ),
     )
 
@@ -153,5 +174,32 @@ class Job(BaseModel, Base):
     # Full-text search vector, maintained entirely by a DB trigger — never set
     # from application code, and never exposed in API schemas.
     search_vector: Mapped[str | None] = mapped_column(TSVECTOR, nullable=True)
+
+    # --- Semantic search (M31) ---
+    # Vector embedding of the normalized job text; NULL until embedded. Never
+    # exposed in API schemas (1536 floats).
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(JOB_EMBEDDING_DIM), nullable=True
+    )
+    # Which embedding model produced `embedding` (e.g. text-embedding-3-small).
+    embedding_model: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
+    embedding_status: Mapped[JobEmbeddingStatus] = mapped_column(
+        Enum(
+            JobEmbeddingStatus,
+            name="job_embedding_status",
+            values_callable=lambda enum_cls: [m.value for m in enum_cls],
+        ),
+        default=JobEmbeddingStatus.PENDING,
+        server_default=JobEmbeddingStatus.PENDING.value,
+        nullable=False,
+        index=True,
+    )
+    # Failure reason when embedding_status == FAILED; NULL otherwise.
+    embedding_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    embedded_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     company = relationship("Company")

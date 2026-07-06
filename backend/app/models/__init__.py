@@ -8,7 +8,7 @@ from app.models.base import BaseModel
 from app.models.company import Company
 from app.models.connector_run import ConnectorRun, ConnectorRunStatus
 from app.models.cover_letter import CoverLetter, CoverLetterStatus
-from app.models.job import Job, JobSource, JobStatus
+from app.models.job import Job, JobEmbeddingStatus, JobSource, JobStatus
 from app.models.job_alert import JobAlert, JobAlertFrequency
 from app.models.job_match import JobMatch
 from app.models.resume import Resume, ResumeExtractionStatus, ResumeFileType
@@ -24,6 +24,7 @@ __all__ = [
     "Job",
     "JobSource",
     "JobStatus",
+    "JobEmbeddingStatus",
     "SavedSearch",
     "JobAlert",
     "JobAlertFrequency",

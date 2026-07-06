@@ -7,9 +7,13 @@ from app.services.company_service import CompanyService
 from app.services.connector_run_service import ConnectorRunService
 from app.services.cover_letter_service import CoverLetterService
 from app.services.job_alert_service import JobAlertService
+from app.services.job_embedding_service import JobEmbeddingService
 from app.services.job_ingestion_service import JobIngestionService
 from app.services.job_match_scoring_service import JobMatchScoringService
 from app.services.job_match_service import JobMatchService
+from app.services.semantic_job_search_service import (
+    SemanticJobSearchService,
+)
 from app.services.job_service import JobService
 from app.services.job_verification_service import JobVerificationService
 from app.services.resume_parser_service import ResumeParserService
@@ -35,4 +39,6 @@ __all__ = [
     "JobMatchScoringService",
     "JobMatchService",
     "CoverLetterService",
+    "JobEmbeddingService",
+    "SemanticJobSearchService",
 ]

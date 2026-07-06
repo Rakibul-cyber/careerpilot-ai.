@@ -36,6 +36,14 @@ class Settings(BaseSettings):
     AI_PARSER_MAX_TOKENS: int = 4096
     AI_COVER_LETTER_MAX_TOKENS: int = 2048
 
+    # Semantic search embeddings (OpenAI — Anthropic has no embeddings API).
+    # Optional at startup; if unset, embedding ops fail cleanly (status=failed)
+    # and semantic search returns a clean error. EMBEDDING_DIMENSIONS must match
+    # app.models.job.JOB_EMBEDDING_DIM (1536 for text-embedding-3-small).
+    OPENAI_API_KEY: str | None = None
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSIONS: int = 1536
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

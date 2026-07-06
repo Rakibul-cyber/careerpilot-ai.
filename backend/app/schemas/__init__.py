@@ -37,6 +37,12 @@ from app.schemas.saved_search import (
     SavedSearchRead,
     SavedSearchUpdate,
 )
+from app.schemas.semantic_search import (
+    EmbeddingRebuildResponse,
+    JobEmbeddingRead,
+    SemanticSearchRequest,
+    SemanticSearchResult,
+)
 from app.schemas.user import UserBase, UserCreate, UserRead, UserUpdate
 
 __all__ = [
@@ -69,6 +75,10 @@ __all__ = [
     "CoverLetterCreate",
     "CoverLetterRead",
     "CoverLetterAIOutput",
+    "JobEmbeddingRead",
+    "SemanticSearchRequest",
+    "SemanticSearchResult",
+    "EmbeddingRebuildResponse",
     "ResumeRead",
     "ResumeTextRead",
     "ResumeProfileRead",
