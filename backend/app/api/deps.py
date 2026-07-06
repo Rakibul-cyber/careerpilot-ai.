@@ -24,6 +24,9 @@ from app.services.job_match_service import JobMatchService
 from app.services.job_recommendation_service import (
     JobRecommendationService,
 )
+from app.services.interview_preparation_service import (
+    InterviewPreparationService,
+)
 from app.services.job_service import JobService
 from app.services.semantic_job_search_service import (
     SemanticJobSearchService,
@@ -86,6 +89,10 @@ def get_semantic_job_search_service() -> SemanticJobSearchService:
 
 def get_job_recommendation_service() -> JobRecommendationService:
     return JobRecommendationService()
+
+
+def get_interview_preparation_service() -> InterviewPreparationService:
+    return InterviewPreparationService()
 
 
 def get_current_user(

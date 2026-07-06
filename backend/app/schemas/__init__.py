@@ -24,6 +24,10 @@ from app.schemas.cover_letter import (
     CoverLetterRead,
 )
 from app.schemas.ingestion import RawJobInput
+from app.schemas.interview_preparation import (
+    InterviewPreparationAIOutput,
+    InterviewPreparationRead,
+)
 from app.schemas.job import JobBase, JobCreate, JobFilter, JobRead, JobUpdate
 from app.schemas.job_match import JobMatchRead
 from app.schemas.job_recommendation import JobRecommendationRead
@@ -77,6 +81,8 @@ __all__ = [
     "JobMatchRead",
     "JobRecommendationRead",
     "RawJobInput",
+    "InterviewPreparationRead",
+    "InterviewPreparationAIOutput",
     "SavedSearchBase",
     "SavedSearchCreate",
     "SavedSearchUpdate",

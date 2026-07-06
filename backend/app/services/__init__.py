@@ -15,6 +15,9 @@ from app.services.job_match_service import JobMatchService
 from app.services.job_recommendation_service import (
     JobRecommendationService,
 )
+from app.services.interview_preparation_service import (
+    InterviewPreparationService,
+)
 from app.services.semantic_job_search_service import (
     SemanticJobSearchService,
 )
@@ -47,4 +50,5 @@ __all__ = [
     "JobEmbeddingService",
     "SemanticJobSearchService",
     "JobRecommendationService",
+    "InterviewPreparationService",
 ]

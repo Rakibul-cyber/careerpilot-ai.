@@ -12,11 +12,20 @@ from app.models.job import Job, JobEmbeddingStatus, JobSource, JobStatus
 from app.models.job_alert import JobAlert, JobAlertFrequency
 from app.models.job_match import JobMatch
 from app.models.job_recommendation import JobRecommendation
+from app.models.application import (
+    Application,
+    ApplicationSource,
+    ApplicationStatus,
+)
+from app.models.interview_preparation import (
+    InterviewDifficulty,
+    InterviewPreparation,
+    InterviewPreparationStatus,
+)
 from app.models.resume import Resume, ResumeExtractionStatus, ResumeFileType
 from app.models.resume_profile import ResumeParseStatus, ResumeProfile
 from app.models.saved_search import SavedSearch
 from app.models.user import User, UserRole
-from app.models.application import Application, ApplicationSource, ApplicationStatus
 
 __all__ = [
     "BaseModel",
@@ -35,6 +44,9 @@ __all__ = [
     "JobAlertFrequency",
     "JobMatch",
     "JobRecommendation",
+    "InterviewPreparation",
+    "InterviewPreparationStatus",
+    "InterviewDifficulty",
     "ConnectorRun",
     "ConnectorRunStatus",
     "CoverLetter",

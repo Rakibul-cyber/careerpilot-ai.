@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     ANTHROPIC_MODEL: str = "claude-opus-4-8"
     AI_PARSER_MAX_TOKENS: int = 4096
     AI_COVER_LETTER_MAX_TOKENS: int = 2048
+    AI_INTERVIEW_PREPARATION_MAX_TOKENS: int = 4096
 
     # Semantic search embeddings (OpenAI — Anthropic has no embeddings API).
     # Optional at startup; if unset, embedding ops fail cleanly (status=failed)

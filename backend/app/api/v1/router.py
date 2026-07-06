@@ -8,6 +8,7 @@ from app.api.v1 import (
     auth,
     companies,
     cover_letters,
+    interview_preparations,
     job_alerts,
     job_matches,
     job_recommendations,
@@ -33,3 +34,4 @@ api_router.include_router(resume_profiles.router)
 api_router.include_router(job_matches.router)
 api_router.include_router(job_recommendations.router)
 api_router.include_router(cover_letters.router)
+api_router.include_router(interview_preparations.router)

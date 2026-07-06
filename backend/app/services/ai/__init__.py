@@ -12,6 +12,10 @@ from app.services.ai.base_embedding_client import (
     AIEmbeddingClient,
     EmbeddingAIError,
 )
+from app.services.ai.base_interview_client import (
+    AIInterviewPreparationClient,
+    InterviewPreparationAIError,
+)
 from app.services.ai.resume_parser_client import (
     AIParserError,
     AIResumeParserClient,
@@ -24,4 +28,6 @@ __all__ = [
     "CoverLetterAIError",
     "AIEmbeddingClient",
     "EmbeddingAIError",
+    "AIInterviewPreparationClient",
+    "InterviewPreparationAIError",
 ]
