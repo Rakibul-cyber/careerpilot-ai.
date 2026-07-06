@@ -8,6 +8,10 @@ services:
     container_name: careerpilot_api
     env_file:
       - .env
+    environment:
+      # Inside Docker, Postgres is reachable at the Compose service name "db".
+      DATABASE_URL: >-
+        ${DOCKER_DATABASE_URL:-postgresql://postgres:postgres@db:5432/careerpilot}
     ports:
       - "8000:8000"
     depends_on:
@@ -23,9 +27,9 @@ services:
     image: pgvector/pgvector:pg16
     container_name: careerpilot_postgres
     environment:
-      POSTGRES_DB: careerpilot
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-careerpilot}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:

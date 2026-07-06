@@ -5,6 +5,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -34,6 +35,15 @@ app = FastAPI(title=settings.APP_NAME, debug=settings.DEBUG, lifespan=lifespan)
 
 # Request-id + request logging must wrap every request, so register it first.
 app.add_middleware(RequestIDMiddleware)
+
+if settings.CORS_ALLOWED_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ALLOWED_ORIGINS,
+        allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
+        allow_methods=settings.CORS_ALLOWED_METHODS,
+        allow_headers=settings.CORS_ALLOWED_HEADERS,
+    )
 
 # Mount all v1 routes under the configured prefix.
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
