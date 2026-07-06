@@ -2,8 +2,8 @@
 #
 # Kept separate from JobRepository so the vector-specific SQL lives in one
 # place. Semantic search excludes soft-deleted and non-ACTIVE jobs and jobs
-# without an embedding, and orders by cosine distance (deterministic for a
-# given query vector and stored vectors).
+# without a completed embedding, and orders by cosine distance (deterministic
+# for a given query vector and stored vectors).
 
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ class JobEmbeddingRepository:
                 Job.deleted_at.is_(None),
                 Job.status == JobStatus.ACTIVE,
                 Job.embedding.is_not(None),
+                Job.embedding_status == JobEmbeddingStatus.COMPLETED,
             )
             .order_by(distance.asc())
             .limit(limit)

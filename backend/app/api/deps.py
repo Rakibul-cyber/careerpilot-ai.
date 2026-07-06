@@ -20,6 +20,9 @@ from app.services.cover_letter_service import CoverLetterService
 from app.services.job_alert_service import JobAlertService
 from app.services.job_embedding_service import JobEmbeddingService
 from app.services.job_match_service import JobMatchService
+from app.services.job_recommendation_service import (
+    JobRecommendationService,
+)
 from app.services.job_service import JobService
 from app.services.semantic_job_search_service import (
     SemanticJobSearchService,
@@ -74,6 +77,10 @@ def get_job_embedding_service() -> JobEmbeddingService:
 
 def get_semantic_job_search_service() -> SemanticJobSearchService:
     return SemanticJobSearchService()
+
+
+def get_job_recommendation_service() -> JobRecommendationService:
+    return JobRecommendationService()
 
 
 def get_current_user(

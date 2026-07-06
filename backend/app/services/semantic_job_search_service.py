@@ -30,13 +30,15 @@ class SemanticJobSearchService:
     ) -> list[tuple[Job, float]]:
         """Return (job, similarity_score) ranked most-similar first.
 
-        similarity_score = 1 - cosine_distance, so higher is closer. Results
-        are deterministic for a given query vector and stored vectors.
+        similarity_score = 1 - cosine_distance, clamped to 0..1 so higher is
+        closer. Results are deterministic for a given query vector and stored
+        vectors.
         """
         query_vector = self.embedding_client.embed_text(query)
         rows = self.job_embedding_repository.semantic_search(
             db, query_vector, limit
         )
         return [
-            (job, round(1.0 - distance, 6)) for job, distance in rows
+            (job, round(max(0.0, min(1.0, 1.0 - distance)), 6))
+            for job, distance in rows
         ]

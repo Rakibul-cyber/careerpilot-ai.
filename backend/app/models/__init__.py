@@ -11,6 +11,7 @@ from app.models.cover_letter import CoverLetter, CoverLetterStatus
 from app.models.job import Job, JobEmbeddingStatus, JobSource, JobStatus
 from app.models.job_alert import JobAlert, JobAlertFrequency
 from app.models.job_match import JobMatch
+from app.models.job_recommendation import JobRecommendation
 from app.models.resume import Resume, ResumeExtractionStatus, ResumeFileType
 from app.models.resume_profile import ResumeParseStatus, ResumeProfile
 from app.models.saved_search import SavedSearch
@@ -29,6 +30,7 @@ __all__ = [
     "JobAlert",
     "JobAlertFrequency",
     "JobMatch",
+    "JobRecommendation",
     "ConnectorRun",
     "ConnectorRunStatus",
     "CoverLetter",

@@ -9,6 +9,7 @@ from app.api.v1 import (
     cover_letters,
     job_alerts,
     job_matches,
+    job_recommendations,
     jobs,
     resume_profiles,
     resumes,
@@ -28,4 +29,5 @@ api_router.include_router(job_alerts.router)
 api_router.include_router(resumes.router)
 api_router.include_router(resume_profiles.router)
 api_router.include_router(job_matches.router)
+api_router.include_router(job_recommendations.router)
 api_router.include_router(cover_letters.router)

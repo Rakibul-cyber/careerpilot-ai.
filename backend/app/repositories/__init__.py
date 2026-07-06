@@ -9,6 +9,9 @@ from app.repositories.cover_letter_repository import CoverLetterRepository
 from app.repositories.job_alert_repository import JobAlertRepository
 from app.repositories.job_embedding_repository import JobEmbeddingRepository
 from app.repositories.job_match_repository import JobMatchRepository
+from app.repositories.job_recommendation_repository import (
+    JobRecommendationRepository,
+)
 from app.repositories.job_repository import JobRepository
 from app.repositories.resume_profile_repository import (
     ResumeProfileRepository,
@@ -29,4 +32,5 @@ __all__ = [
     "JobMatchRepository",
     "CoverLetterRepository",
     "JobEmbeddingRepository",
+    "JobRecommendationRepository",
 ]

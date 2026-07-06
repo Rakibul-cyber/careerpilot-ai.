@@ -93,8 +93,8 @@ def semantic_search_jobs(
     """Rank ACTIVE jobs by semantic similarity to a natural-language query.
 
     Sits beside the filter/full-text search on GET /jobs (does not replace it).
-    Excludes soft-deleted and non-ACTIVE jobs. A provider failure returns a
-    clean 502 rather than crashing.
+    Excludes soft-deleted, non-ACTIVE, and non-embedded jobs. A provider
+    failure returns a clean 502 rather than crashing.
     """
     try:
         results = search_service.search(db, payload.query, limit=payload.limit)

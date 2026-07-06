@@ -11,6 +11,9 @@ from app.services.job_embedding_service import JobEmbeddingService
 from app.services.job_ingestion_service import JobIngestionService
 from app.services.job_match_scoring_service import JobMatchScoringService
 from app.services.job_match_service import JobMatchService
+from app.services.job_recommendation_service import (
+    JobRecommendationService,
+)
 from app.services.semantic_job_search_service import (
     SemanticJobSearchService,
 )
@@ -41,4 +44,5 @@ __all__ = [
     "CoverLetterService",
     "JobEmbeddingService",
     "SemanticJobSearchService",
+    "JobRecommendationService",
 ]
