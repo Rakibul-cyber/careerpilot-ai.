@@ -4,6 +4,7 @@
 # storage engine swappable and makes the business layer trivially unit-testable.
 
 from app.repositories.application_repository import ApplicationRepository
+from app.repositories.analytics_repository import AnalyticsRepository
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.connector_run_repository import ConnectorRunRepository
 from app.repositories.cover_letter_repository import CoverLetterRepository
@@ -27,6 +28,7 @@ from app.repositories.user_repository import UserRepository
 __all__ = [
     "UserRepository",
     "ApplicationRepository",
+    "AnalyticsRepository",
     "CompanyRepository",
     "JobRepository",
     "SavedSearchRepository",

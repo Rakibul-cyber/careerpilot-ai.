@@ -10,6 +10,12 @@ from app.schemas.application import (
     ApplicationStatusUpdate,
     ApplicationUpdate,
 )
+from app.schemas.analytics import (
+    AIUsageAnalytics,
+    AnalyticsOverview,
+    ApplicationAnalytics,
+    MatchAnalytics,
+)
 from app.schemas.auth import Token, TokenPayload
 from app.schemas.company import (
     CompanyBase,
@@ -64,6 +70,10 @@ __all__ = [
     "ApplicationStatusUpdate",
     "ApplicationRead",
     "ApplicationFilter",
+    "AnalyticsOverview",
+    "ApplicationAnalytics",
+    "MatchAnalytics",
+    "AIUsageAnalytics",
     "UserCreate",
     "UserUpdate",
     "UserRead",
