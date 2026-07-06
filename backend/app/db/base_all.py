@@ -8,6 +8,7 @@
 from app.db.base import Base
 from app.models.company import Company  # noqa: F401
 from app.models.connector_run import ConnectorRun  # noqa: F401
+from app.models.cover_letter import CoverLetter  # noqa: F401
 from app.models.job import Job  # noqa: F401
 from app.models.job_alert import JobAlert  # noqa: F401
 from app.models.job_match import JobMatch  # noqa: F401

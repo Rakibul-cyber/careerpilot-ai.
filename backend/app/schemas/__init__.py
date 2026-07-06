@@ -11,6 +11,11 @@ from app.schemas.company import (
     CompanyUpdate,
 )
 from app.schemas.connector_run import ConnectorRunRead
+from app.schemas.cover_letter import (
+    CoverLetterAIOutput,
+    CoverLetterCreate,
+    CoverLetterRead,
+)
 from app.schemas.ingestion import RawJobInput
 from app.schemas.job import JobBase, JobCreate, JobFilter, JobRead, JobUpdate
 from app.schemas.job_match import JobMatchRead
@@ -61,6 +66,9 @@ __all__ = [
     "JobAlertUpdate",
     "JobAlertRead",
     "ConnectorRunRead",
+    "CoverLetterCreate",
+    "CoverLetterRead",
+    "CoverLetterAIOutput",
     "ResumeRead",
     "ResumeTextRead",
     "ResumeProfileRead",

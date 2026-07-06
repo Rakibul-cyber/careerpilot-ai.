@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str | None = None
     ANTHROPIC_MODEL: str = "claude-opus-4-8"
     AI_PARSER_MAX_TOKENS: int = 4096
+    AI_COVER_LETTER_MAX_TOKENS: int = 2048
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

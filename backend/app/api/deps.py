@@ -16,6 +16,7 @@ from app.db.session import get_db  # noqa: F401  (re-exported dependency)
 from app.models.user import User, UserRole
 from app.schemas.auth import TokenPayload
 from app.services.company_service import CompanyService
+from app.services.cover_letter_service import CoverLetterService
 from app.services.job_alert_service import JobAlertService
 from app.services.job_match_service import JobMatchService
 from app.services.job_service import JobService
@@ -57,6 +58,10 @@ def get_resume_parser_service() -> ResumeParserService:
 
 def get_job_match_service() -> JobMatchService:
     return JobMatchService()
+
+
+def get_cover_letter_service() -> CoverLetterService:
+    return CoverLetterService()
 
 
 def get_current_user(

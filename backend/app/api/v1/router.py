@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     auth,
     companies,
+    cover_letters,
     job_alerts,
     job_matches,
     jobs,
@@ -27,3 +28,4 @@ api_router.include_router(job_alerts.router)
 api_router.include_router(resumes.router)
 api_router.include_router(resume_profiles.router)
 api_router.include_router(job_matches.router)
+api_router.include_router(cover_letters.router)

@@ -5,6 +5,7 @@
 
 from app.services.company_service import CompanyService
 from app.services.connector_run_service import ConnectorRunService
+from app.services.cover_letter_service import CoverLetterService
 from app.services.job_alert_service import JobAlertService
 from app.services.job_ingestion_service import JobIngestionService
 from app.services.job_match_scoring_service import JobMatchScoringService
@@ -33,4 +34,5 @@ __all__ = [
     "ResumeParserService",
     "JobMatchScoringService",
     "JobMatchService",
+    "CoverLetterService",
 ]
