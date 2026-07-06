@@ -7,6 +7,7 @@ from app.repositories.company_repository import CompanyRepository
 from app.repositories.connector_run_repository import ConnectorRunRepository
 from app.repositories.job_alert_repository import JobAlertRepository
 from app.repositories.job_repository import JobRepository
+from app.repositories.resume_repository import ResumeRepository
 from app.repositories.saved_search_repository import SavedSearchRepository
 from app.repositories.user_repository import UserRepository
 
@@ -17,4 +18,5 @@ __all__ = [
     "SavedSearchRepository",
     "JobAlertRepository",
     "ConnectorRunRepository",
+    "ResumeRepository",
 ]

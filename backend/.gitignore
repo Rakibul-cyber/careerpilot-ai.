@@ -23,6 +23,9 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Uploaded files (local storage)
+uploads/
+
 # IDE / OS
 .idea/
 .vscode/

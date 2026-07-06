@@ -3,7 +3,15 @@
 
 from fastapi import APIRouter
 
-from app.api.v1 import auth, companies, job_alerts, jobs, saved_searches, users
+from app.api.v1 import (
+    auth,
+    companies,
+    job_alerts,
+    jobs,
+    resumes,
+    saved_searches,
+    users,
+)
 from app.api.v1.endpoints import health
 
 api_router = APIRouter()
@@ -14,3 +22,4 @@ api_router.include_router(companies.router)
 api_router.include_router(jobs.router)
 api_router.include_router(saved_searches.router)
 api_router.include_router(job_alerts.router)
+api_router.include_router(resumes.router)

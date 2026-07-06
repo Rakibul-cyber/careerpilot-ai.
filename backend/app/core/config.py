@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     SCHEDULER_ENABLED: bool = False
     SCHEDULER_TIMEZONE: str = "Europe/Berlin"
 
+    # Resume uploads. Files are stored on local disk under UPLOAD_DIR for now
+    # (no S3 yet). MAX_RESUME_UPLOAD_MB caps a single resume's size.
+    UPLOAD_DIR: str = "uploads"
+    MAX_RESUME_UPLOAD_MB: int = 5
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
