@@ -13,6 +13,7 @@ from app.schemas.company import (
 from app.schemas.connector_run import ConnectorRunRead
 from app.schemas.ingestion import RawJobInput
 from app.schemas.job import JobBase, JobCreate, JobFilter, JobRead, JobUpdate
+from app.schemas.job_match import JobMatchRead
 from app.schemas.job_alert import (
     JobAlertBase,
     JobAlertCreate,
@@ -49,6 +50,7 @@ __all__ = [
     "JobUpdate",
     "JobRead",
     "JobFilter",
+    "JobMatchRead",
     "RawJobInput",
     "SavedSearchBase",
     "SavedSearchCreate",

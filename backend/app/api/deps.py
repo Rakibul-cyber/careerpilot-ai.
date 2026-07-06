@@ -17,6 +17,7 @@ from app.models.user import User, UserRole
 from app.schemas.auth import TokenPayload
 from app.services.company_service import CompanyService
 from app.services.job_alert_service import JobAlertService
+from app.services.job_match_service import JobMatchService
 from app.services.job_service import JobService
 from app.services.resume_parser_service import ResumeParserService
 from app.services.resume_service import ResumeService
@@ -52,6 +53,10 @@ def get_resume_service() -> ResumeService:
 
 def get_resume_parser_service() -> ResumeParserService:
     return ResumeParserService()
+
+
+def get_job_match_service() -> JobMatchService:
+    return JobMatchService()
 
 
 def get_current_user(

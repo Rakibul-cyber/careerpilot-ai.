@@ -6,6 +6,7 @@
 from app.repositories.company_repository import CompanyRepository
 from app.repositories.connector_run_repository import ConnectorRunRepository
 from app.repositories.job_alert_repository import JobAlertRepository
+from app.repositories.job_match_repository import JobMatchRepository
 from app.repositories.job_repository import JobRepository
 from app.repositories.resume_profile_repository import (
     ResumeProfileRepository,
@@ -23,4 +24,5 @@ __all__ = [
     "ConnectorRunRepository",
     "ResumeRepository",
     "ResumeProfileRepository",
+    "JobMatchRepository",
 ]
