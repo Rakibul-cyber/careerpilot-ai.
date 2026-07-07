@@ -42,9 +42,7 @@ class JobRecommendation(BaseModel, Base):
             postgresql_where=text("deleted_at IS NULL"),
         ),
         Index("ix_job_recommendations_user_id", "user_id"),
-        Index(
-            "ix_job_recommendations_resume_profile_id", "resume_profile_id"
-        ),
+        Index("ix_job_recommendations_resume_profile_id", "resume_profile_id"),
         Index("ix_job_recommendations_job_id", "job_id"),
     )
 
@@ -74,14 +72,10 @@ class JobRecommendation(BaseModel, Base):
     match_score: Mapped[float] = mapped_column(Float, nullable=False)
     final_score: Mapped[float] = mapped_column(Float, nullable=False)
 
-    recommendation_reasons: Mapped[list | None] = mapped_column(
-        JSONB, nullable=True
-    )
+    recommendation_reasons: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     risk_flags: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     # Full blend breakdown (weights, component scores, match id) for auditing.
-    raw_recommendation_data: Mapped[dict | None] = mapped_column(
-        JSONB, nullable=True
-    )
+    raw_recommendation_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
     recommended_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True

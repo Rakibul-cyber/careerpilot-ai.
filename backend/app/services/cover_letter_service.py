@@ -7,7 +7,7 @@
 # or validation fails (the failure is captured, not raised to the caller).
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -75,12 +75,8 @@ class CoverLetterService:
             resume_profile_repository or ResumeProfileRepository()
         )
         self.job_repository = job_repository or JobRepository()
-        self.job_match_repository = (
-            job_match_repository or JobMatchRepository()
-        )
-        self.cover_letter_client = (
-            cover_letter_client or AnthropicCoverLetterClient()
-        )
+        self.job_match_repository = job_match_repository or JobMatchRepository()
+        self.cover_letter_client = cover_letter_client or AnthropicCoverLetterClient()
 
     def generate(
         self,
@@ -97,9 +93,7 @@ class CoverLetterService:
         Precondition failures raise; AI/validation failures are captured on a
         FAILED row rather than raised.
         """
-        profile = self._require_completed_profile(
-            db, user_id, resume_profile_id
-        )
+        profile = self._require_completed_profile(db, user_id, resume_profile_id)
 
         job = self.job_repository.get_by_id(db, job_id)
         if job is None:
@@ -135,7 +129,7 @@ class CoverLetterService:
             cover_letter.content = parsed.content
             cover_letter.generation_status = CoverLetterStatus.COMPLETED
             cover_letter.generation_error = None
-            cover_letter.generated_at = datetime.now(timezone.utc)
+            cover_letter.generated_at = datetime.now(UTC)
             logger.info(
                 "Cover letter generated user_id=%s job_id=%s chars=%d",
                 user_id,
@@ -146,7 +140,7 @@ class CoverLetterService:
             cover_letter.raw_ai_response = raw_response
             cover_letter.generation_status = CoverLetterStatus.FAILED
             cover_letter.generation_error = f"{type(exc).__name__}: {exc}"
-            cover_letter.generated_at = datetime.now(timezone.utc)
+            cover_letter.generated_at = datetime.now(UTC)
             logger.exception(
                 "Cover letter generation failed user_id=%s job_id=%s",
                 user_id,
@@ -205,10 +199,7 @@ class CoverLetterService:
         if match is None:
             # Missing or another user's — never confirm existence.
             raise JobMatchNotFoundError("Job match not found")
-        if (
-            match.resume_profile_id != resume_profile_id
-            or match.job_id != job_id
-        ):
+        if match.resume_profile_id != resume_profile_id or match.job_id != job_id:
             raise JobMatchMismatchError(
                 "job_match does not belong to the given profile and job"
             )

@@ -5,6 +5,7 @@
 # current-user resolver are wired here, keeping construction and auth plumbing
 # out of the route handlers.
 from collections.abc import Callable
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
@@ -15,26 +16,26 @@ from app.core.security import decode_access_token
 from app.db.session import get_db  # noqa: F401  (re-exported dependency)
 from app.models.user import User, UserRole
 from app.schemas.auth import TokenPayload
-from app.services.application_service import ApplicationService
 from app.services.analytics_service import AnalyticsService
+from app.services.application_service import ApplicationService
 from app.services.company_service import CompanyService
 from app.services.cover_letter_service import CoverLetterService
+from app.services.interview_preparation_service import (
+    InterviewPreparationService,
+)
 from app.services.job_alert_service import JobAlertService
 from app.services.job_embedding_service import JobEmbeddingService
 from app.services.job_match_service import JobMatchService
 from app.services.job_recommendation_service import (
     JobRecommendationService,
 )
-from app.services.interview_preparation_service import (
-    InterviewPreparationService,
-)
 from app.services.job_service import JobService
-from app.services.semantic_job_search_service import (
-    SemanticJobSearchService,
-)
 from app.services.resume_parser_service import ResumeParserService
 from app.services.resume_service import ResumeService
 from app.services.saved_search_service import SavedSearchService
+from app.services.semantic_job_search_service import (
+    SemanticJobSearchService,
+)
 from app.services.user_service import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -119,8 +120,8 @@ def get_current_user(
 
     try:
         payload = TokenPayload(**decode_access_token(token))
-    except (JWTError, ValidationError):
-        raise credentials_exception
+    except (JWTError, ValidationError) as exc:
+        raise credentials_exception from exc
 
     if payload.type != "access":
         raise credentials_exception

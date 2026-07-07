@@ -6,7 +6,7 @@
 # also surfaces the candidate queries (stale / expired / archivable) used by a
 # future scheduler.
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -23,7 +23,7 @@ class JobVerificationService:
 
     def mark_verified(self, db: Session, job: Job) -> Job:
         """Stamp the job as verified now and (re)assert ACTIVE."""
-        job.last_verified_at = datetime.now(timezone.utc)
+        job.last_verified_at = datetime.now(UTC)
         job.status = JobStatus.ACTIVE
         return self.job_repository.update(db, job)
 
@@ -45,7 +45,7 @@ class JobVerificationService:
         limit: int = 100,
     ) -> list[Job]:
         """Active jobs not verified within the last ``max_age_hours`` hours."""
-        older_than = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+        older_than = datetime.now(UTC) - timedelta(hours=max_age_hours)
         return self.job_repository.list_stale_active_jobs(
             db, older_than=older_than, skip=skip, limit=limit
         )
@@ -56,10 +56,8 @@ class JobVerificationService:
         limit: int = 100,
     ) -> list[Job]:
         """Mark every active job past its expires_at deadline as EXPIRED."""
-        now = datetime.now(timezone.utc)
-        candidates = self.job_repository.list_expired_jobs(
-            db, now=now, limit=limit
-        )
+        now = datetime.now(UTC)
+        candidates = self.job_repository.list_expired_jobs(db, now=now, limit=limit)
         expired = [self.mark_expired(db, job) for job in candidates]
         logger.info("Expired jobs past deadline count=%d", len(expired))
         return expired
@@ -71,7 +69,7 @@ class JobVerificationService:
         limit: int = 100,
     ) -> list[Job]:
         """Archive expired jobs untouched for longer than ``retention_days``."""
-        older_than = datetime.now(timezone.utc) - timedelta(days=retention_days)
+        older_than = datetime.now(UTC) - timedelta(days=retention_days)
         candidates = self.job_repository.list_jobs_for_archival(
             db, older_than=older_than, limit=limit
         )

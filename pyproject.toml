@@ -15,3 +15,13 @@ omit = [
 fail_under = 70
 show_missing = true
 skip_covered = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# FastAPI intentionally uses Depends()/Query() in route defaults.
+# Keep SQLAlchemy-backed enums on the established str + Enum pattern for now.
+ignore = ["B008", "UP042"]

@@ -3,7 +3,7 @@
 # All reads are scoped by user_id and exclude soft-deleted rows. No generation
 # logic here (that lives in CoverLetterService). Lists are newest-first.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -49,11 +49,9 @@ class CoverLetterRepository:
         )
         return list(db.execute(stmt).scalars().all())
 
-    def soft_delete(
-        self, db: Session, cover_letter: CoverLetter
-    ) -> CoverLetter:
+    def soft_delete(self, db: Session, cover_letter: CoverLetter) -> CoverLetter:
         """Mark the cover letter deleted by stamping deleted_at (UTC)."""
-        cover_letter.deleted_at = datetime.now(timezone.utc)
+        cover_letter.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(cover_letter)
         return cover_letter

@@ -5,7 +5,7 @@
 # a user. Physical files are NOT deleted on soft delete (kept for now).
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -35,8 +35,7 @@ _EXTENSION_TO_TYPE = {
 _TYPE_TO_MIME = {
     ResumeFileType.PDF: "application/pdf",
     ResumeFileType.DOCX: (
-        "application/vnd.openxmlformats-officedocument"
-        ".wordprocessingml.document"
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     ),
 }
 
@@ -81,9 +80,7 @@ class ResumeService:
         file_path = self._store_file(user_id, stored_filename, content)
 
         # First resume becomes primary automatically; explicit request wins too.
-        has_existing = bool(
-            self.resume_repository.list_by_user(db, user_id, limit=1)
-        )
+        has_existing = bool(self.resume_repository.list_by_user(db, user_id, limit=1))
         make_primary = is_primary or not has_existing
         if make_primary:
             self.resume_repository.clear_primary_for_user(db, user_id)
@@ -112,13 +109,11 @@ class ResumeService:
         # Extraction failure must not lose the upload — keep the row, mark it
         # FAILED with the reason so a future retry job can find and re-run it.
         try:
-            text = self.text_extraction_service.extract_text(
-                str(file_path), file_type
-            )
+            text = self.text_extraction_service.extract_text(str(file_path), file_type)
             resume.extracted_text = text
             resume.status = ResumeExtractionStatus.COMPLETED
             resume.extraction_error = None
-            resume.processed_at = datetime.now(timezone.utc)
+            resume.processed_at = datetime.now(UTC)
             resume = self.resume_repository.update(db, resume)
             logger.info(
                 "Resume text extracted resume_id=%s chars=%d",
@@ -129,18 +124,14 @@ class ResumeService:
             resume.status = ResumeExtractionStatus.FAILED
             resume.extraction_error = f"{type(exc).__name__}: {exc}"
             resume = self.resume_repository.update(db, resume)
-            logger.exception(
-                "Resume text extraction failed resume_id=%s", resume.id
-            )
+            logger.exception("Resume text extraction failed resume_id=%s", resume.id)
 
         return resume
 
     def list_resumes(
         self, db: Session, user_id: uuid.UUID, skip: int = 0, limit: int = 50
     ) -> list[Resume]:
-        return self.resume_repository.list_by_user(
-            db, user_id, skip=skip, limit=limit
-        )
+        return self.resume_repository.list_by_user(db, user_id, skip=skip, limit=limit)
 
     def get_resume(
         self, db: Session, user_id: uuid.UUID, resume_id: uuid.UUID
@@ -177,9 +168,7 @@ class ResumeService:
             extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
         file_type = _EXTENSION_TO_TYPE.get(extension)
         if file_type is None:
-            raise UnsupportedFileTypeError(
-                "Only PDF and DOCX resumes are supported"
-            )
+            raise UnsupportedFileTypeError("Only PDF and DOCX resumes are supported")
         return file_type
 
     def _store_file(

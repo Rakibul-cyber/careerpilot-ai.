@@ -39,9 +39,7 @@ class JobEmbeddingRepository:
         )
         return [(row[0], float(row[1])) for row in db.execute(stmt).all()]
 
-    def list_active_needing_embedding(
-        self, db: Session, limit: int
-    ) -> list[Job]:
+    def list_active_needing_embedding(self, db: Session, limit: int) -> list[Job]:
         """Return live ACTIVE jobs whose embedding is pending or failed."""
         stmt = (
             select(Job)
@@ -57,9 +55,7 @@ class JobEmbeddingRepository:
         )
         return list(db.execute(stmt).scalars().all())
 
-    def get_active_by_id(
-        self, db: Session, job_id: UUID
-    ) -> Job | None:
+    def get_active_by_id(self, db: Session, job_id: UUID) -> Job | None:
         """Return the live ACTIVE job with this id, or None."""
         stmt = select(Job).where(
             Job.id == job_id,

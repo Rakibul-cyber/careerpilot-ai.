@@ -12,7 +12,7 @@
 # failures are inspectable and retryable.
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -72,34 +72,26 @@ class ResumeParserService:
             raise ResumeNotFoundError("Resume not found")
 
         if resume.status != ResumeExtractionStatus.COMPLETED:
-            raise ResumeNotParsableError(
-                "Resume text extraction has not completed"
-            )
+            raise ResumeNotParsableError("Resume text extraction has not completed")
         if not resume.extracted_text:
-            raise ResumeNotParsableError(
-                "Resume has no extracted text to parse"
-            )
+            raise ResumeNotParsableError("Resume has no extracted text to parse")
 
         # Upsert: reuse the existing profile row if this resume was parsed
         # before, so re-parsing overwrites rather than duplicates.
-        profile = self.resume_profile_repository.get_by_resume(
-            db, resume_id, user_id
-        )
+        profile = self.resume_profile_repository.get_by_resume(db, resume_id, user_id)
         is_new = profile is None
         if is_new:
             profile = ResumeProfile(resume_id=resume_id, user_id=user_id)
 
         raw_response: str | None = None
         try:
-            raw_response = self.parser_client.parse_resume_text(
-                resume.extracted_text
-            )
+            raw_response = self.parser_client.parse_resume_text(resume.extracted_text)
             profile.raw_ai_response = raw_response
             parsed = ResumeProfileAIOutput.model_validate_json(raw_response)
             self._apply_parsed(profile, parsed)
             profile.parse_status = ResumeParseStatus.COMPLETED
             profile.parse_error = None
-            profile.parsed_at = datetime.now(timezone.utc)
+            profile.parsed_at = datetime.now(UTC)
             logger.info(
                 "Resume parsed resume_id=%s profile skills=%d experience=%d",
                 resume_id,
@@ -112,10 +104,8 @@ class ResumeParserService:
             profile.raw_ai_response = raw_response
             profile.parse_status = ResumeParseStatus.FAILED
             profile.parse_error = f"{type(exc).__name__}: {exc}"
-            profile.parsed_at = datetime.now(timezone.utc)
-            logger.exception(
-                "Resume parse failed resume_id=%s", resume_id
-            )
+            profile.parsed_at = datetime.now(UTC)
+            logger.exception("Resume parse failed resume_id=%s", resume_id)
 
         if is_new:
             return self.resume_profile_repository.create(db, profile)
@@ -124,9 +114,7 @@ class ResumeParserService:
     def get_profile_by_resume(
         self, db: Session, user_id: uuid.UUID, resume_id: uuid.UUID
     ) -> ResumeProfile | None:
-        return self.resume_profile_repository.get_by_resume(
-            db, resume_id, user_id
-        )
+        return self.resume_profile_repository.get_by_resume(db, resume_id, user_id)
 
     def list_profiles(
         self, db: Session, user_id: uuid.UUID, skip: int = 0, limit: int = 50
@@ -136,9 +124,7 @@ class ResumeParserService:
         )
 
     @staticmethod
-    def _apply_parsed(
-        profile: ResumeProfile, parsed: ResumeProfileAIOutput
-    ) -> None:
+    def _apply_parsed(profile: ResumeProfile, parsed: ResumeProfileAIOutput) -> None:
         """Copy validated AI output onto the ORM row (sections -> JSONB)."""
         profile.full_name = parsed.full_name
         profile.email = parsed.email
@@ -148,8 +134,6 @@ class ResumeParserService:
         profile.skills = parsed.skills
         profile.certifications = parsed.certifications
         profile.languages = parsed.languages
-        profile.work_experience = [
-            item.model_dump() for item in parsed.work_experience
-        ]
+        profile.work_experience = [item.model_dump() for item in parsed.work_experience]
         profile.education = [item.model_dump() for item in parsed.education]
         profile.projects = [item.model_dump() for item in parsed.projects]

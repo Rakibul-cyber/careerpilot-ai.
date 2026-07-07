@@ -1,12 +1,12 @@
 import sys
 import unittest
 import uuid
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.models.application import ApplicationSource, ApplicationStatus
+from app.models.application import ApplicationStatus
 from app.services.analytics_service import AnalyticsService
 
 
@@ -88,7 +88,7 @@ class FakeAnalyticsRepository:
             {
                 "type": "application",
                 "id": uuid.uuid4(),
-                "occurred_at": datetime.now(timezone.utc),
+                "occurred_at": datetime.now(UTC),
                 "label": "Application applied",
             }
         ]
@@ -145,8 +145,8 @@ class AnalyticsServiceTests(unittest.TestCase):
         repo = FakeAnalyticsRepository()
         service = AnalyticsService(repo)
         user_id = uuid.uuid4()
-        start = datetime(2026, 7, 1, tzinfo=timezone.utc)
-        end = datetime(2026, 7, 31, tzinfo=timezone.utc)
+        start = datetime(2026, 7, 1, tzinfo=UTC)
+        end = datetime(2026, 7, 31, tzinfo=UTC)
 
         overview = service.overview(None, user_id, start, end, limit=5)
 

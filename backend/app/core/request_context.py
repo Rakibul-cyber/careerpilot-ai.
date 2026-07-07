@@ -17,9 +17,7 @@ _request_id_ctx: ContextVar[str | None] = ContextVar("request_id", default=None)
 
 # Current execution id, set by scheduled/background jobs (no HTTP request scope)
 # so their logs are correlatable the way requests are.
-_execution_id_ctx: ContextVar[str | None] = ContextVar(
-    "execution_id", default=None
-)
+_execution_id_ctx: ContextVar[str | None] = ContextVar("execution_id", default=None)
 
 
 def get_request_id() -> str | None:

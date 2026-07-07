@@ -1,7 +1,7 @@
 import sys
 import unittest
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -35,8 +35,8 @@ class ApplicationRepositoryTests(unittest.TestCase):
                 status=ApplicationStatus.APPLIED,
                 company="OpenAI",
                 source=ApplicationSource.RECOMMENDATION,
-                date_from=datetime(2026, 1, 1, tzinfo=timezone.utc),
-                date_to=datetime(2026, 2, 1, tzinfo=timezone.utc),
+                date_from=datetime(2026, 1, 1, tzinfo=UTC),
+                date_to=datetime(2026, 2, 1, tzinfo=UTC),
             ),
             skip=10,
             limit=20,

@@ -44,9 +44,7 @@ class UserService:
         logger.info("User created user_id=%s email=%s", created.id, email)
         return created
 
-    def update_user(
-        self, db: Session, user: User, user_update: UserUpdate
-    ) -> User:
+    def update_user(self, db: Session, user: User, user_update: UserUpdate) -> User:
         if user_update.email is not None:
             email = user_update.email.strip().lower()
             if email != user.email:
@@ -66,9 +64,7 @@ class UserService:
     def delete_user(self, db: Session, user: User) -> User:
         return self.user_repository.soft_delete(db, user)
 
-    def authenticate_user(
-        self, db: Session, email: str, password: str
-    ) -> User | None:
+    def authenticate_user(self, db: Session, email: str, password: str) -> User | None:
         """Return the user if credentials are valid and the account is usable.
 
         Returns None for unknown email, inactive account, passwordless

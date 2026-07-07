@@ -3,18 +3,18 @@
 # One module per resource (e.g. user.py, resume.py). These define validation and
 # serialization boundaries and are intentionally decoupled from ORM models.
 
+from app.schemas.analytics import (
+    AIUsageAnalytics,
+    AnalyticsOverview,
+    ApplicationAnalytics,
+    MatchAnalytics,
+)
 from app.schemas.application import (
     ApplicationCreate,
     ApplicationFilter,
     ApplicationRead,
     ApplicationStatusUpdate,
     ApplicationUpdate,
-)
-from app.schemas.analytics import (
-    AIUsageAnalytics,
-    AnalyticsOverview,
-    ApplicationAnalytics,
-    MatchAnalytics,
 )
 from app.schemas.auth import Token, TokenPayload
 from app.schemas.company import (
@@ -35,14 +35,14 @@ from app.schemas.interview_preparation import (
     InterviewPreparationRead,
 )
 from app.schemas.job import JobBase, JobCreate, JobFilter, JobRead, JobUpdate
-from app.schemas.job_match import JobMatchRead
-from app.schemas.job_recommendation import JobRecommendationRead
 from app.schemas.job_alert import (
     JobAlertBase,
     JobAlertCreate,
     JobAlertRead,
     JobAlertUpdate,
 )
+from app.schemas.job_match import JobMatchRead
+from app.schemas.job_recommendation import JobRecommendationRead
 from app.schemas.resume import ResumeRead, ResumeTextRead
 from app.schemas.resume_profile import (
     ResumeProfileAIOutput,

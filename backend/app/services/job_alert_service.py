@@ -5,7 +5,7 @@
 # the alert. No real email/scheduler yet — run_alert / run_due_alerts are the
 # matching foundation a scheduler will call later.
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -58,9 +58,7 @@ class JobAlertService:
             db, user_id, data.saved_search_id
         )
         if existing is not None:
-            raise ValueError(
-                "Job alert for this saved search already exists"
-            )
+            raise ValueError("Job alert for this saved search already exists")
 
         alert = JobAlert(user_id=user_id, **data.model_dump())
         return self.job_alert_repository.create(db, alert)
@@ -121,7 +119,7 @@ class JobAlertService:
             db, filters=filters, skip=0, limit=_RUN_MATCH_LIMIT
         )
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         alert.last_run_at = now
         alert.last_match_count = len(matches)
         alert.next_run_at = now + _FREQUENCY_INTERVALS[alert.frequency]
@@ -135,11 +133,9 @@ class JobAlertService:
         )
         return matches
 
-    def run_due_alerts(
-        self, db: Session, limit: int = 100
-    ) -> list[JobAlert]:
+    def run_due_alerts(self, db: Session, limit: int = 100) -> list[JobAlert]:
         """Run every alert whose next_run_at has arrived; return those alerts."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         due = self.job_alert_repository.list_due_alerts(db, now, limit=limit)
         for alert in due:
             self.run_alert(db, alert)

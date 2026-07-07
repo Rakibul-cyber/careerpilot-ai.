@@ -4,8 +4,8 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
-    applications,
     analytics,
+    applications,
     auth,
     companies,
     cover_letters,

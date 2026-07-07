@@ -5,7 +5,7 @@
 # domain transition service.
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -54,14 +54,10 @@ class ApplicationService:
         resume_profile_repository: ResumeProfileRepository | None = None,
         resume_repository: ResumeRepository | None = None,
         cover_letter_repository: CoverLetterRepository | None = None,
-        job_recommendation_repository: (
-            JobRecommendationRepository | None
-        ) = None,
+        job_recommendation_repository: (JobRecommendationRepository | None) = None,
         transition_service: ApplicationStatusTransitionService | None = None,
     ) -> None:
-        self.application_repository = (
-            application_repository or ApplicationRepository()
-        )
+        self.application_repository = application_repository or ApplicationRepository()
         self.job_repository = job_repository or JobRepository()
         self.resume_profile_repository = (
             resume_profile_repository or ResumeProfileRepository()
@@ -127,16 +123,14 @@ class ApplicationService:
             company_response=data.company_response,
             interview_date=data.interview_date,
             follow_up_date=data.follow_up_date,
-            last_status_change_at=datetime.now(timezone.utc),
+            last_status_change_at=datetime.now(UTC),
         )
         return self.application_repository.create(db, application)
 
     def get_application(
         self, db: Session, user_id: uuid.UUID, application_id: uuid.UUID
     ) -> Application:
-        application = self.application_repository.get_by_id(
-            db, application_id, user_id
-        )
+        application = self.application_repository.get_by_id(db, application_id, user_id)
         if application is None:
             raise ApplicationNotFoundError("Application not found")
         return application
@@ -205,9 +199,7 @@ class ApplicationService:
         status: ApplicationStatus,
     ) -> Application:
         application = self.get_application(db, user_id, application_id)
-        self.transition_service.validate_transition(
-            application.status, status
-        )
+        self.transition_service.validate_transition(application.status, status)
         if application.status == status:
             return application
 
@@ -218,9 +210,7 @@ class ApplicationService:
     def delete_application(
         self, db: Session, user_id: uuid.UUID, application_id: uuid.UUID
     ) -> Application | None:
-        application = self.application_repository.get_by_id(
-            db, application_id, user_id
-        )
+        application = self.application_repository.get_by_id(db, application_id, user_id)
         if application is None:
             return None
         return self.application_repository.soft_delete(db, application)
@@ -284,15 +274,14 @@ class ApplicationService:
     def _apply_status_timestamps(
         application: Application, status: ApplicationStatus
     ) -> None:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         application.last_status_change_at = now
         if status == ApplicationStatus.APPLIED and application.applied_at is None:
             application.applied_at = now
         elif status == ApplicationStatus.OFFER and application.offer_date is None:
             application.offer_date = now
         elif (
-            status == ApplicationStatus.REJECTED
-            and application.rejection_date is None
+            status == ApplicationStatus.REJECTED and application.rejection_date is None
         ):
             application.rejection_date = now
 

@@ -1,7 +1,7 @@
 import sys
 import unittest
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -26,14 +26,14 @@ class FakeApplicationRepository:
 
     def create(self, db, application):
         application.id = uuid.uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         application.created_at = now
         application.updated_at = now
         self.rows[application.id] = application
         return application
 
     def update(self, db, application):
-        application.updated_at = datetime.now(timezone.utc)
+        application.updated_at = datetime.now(UTC)
         return application
 
     def get_by_id(self, db, application_id, user_id):
@@ -55,7 +55,7 @@ class FakeApplicationRepository:
         return rows[skip : skip + limit]
 
     def soft_delete(self, db, application):
-        application.deleted_at = datetime.now(timezone.utc)
+        application.deleted_at = datetime.now(UTC)
         return application
 
 
@@ -108,9 +108,7 @@ def make_service():
         job_repository=FakeScopedRepository({job_id: row(id=job_id)}),
         resume_profile_repository=FakeScopedRepository({profile_id: profile}),
         resume_repository=FakeScopedRepository({resume_id: resume}),
-        cover_letter_repository=FakeScopedRepository(
-            {cover_letter_id: cover_letter}
-        ),
+        cover_letter_repository=FakeScopedRepository({cover_letter_id: cover_letter}),
         job_recommendation_repository=FakeScopedRepository(
             {recommendation_id: recommendation}
         ),
@@ -176,9 +174,7 @@ class ApplicationServiceTests(unittest.TestCase):
 
     def test_deleted_resource_is_rejected(self):
         ctx = make_service()
-        ctx.service.job_repository.rows[ctx.job_id].deleted_at = datetime.now(
-            timezone.utc
-        )
+        ctx.service.job_repository.rows[ctx.job_id].deleted_at = datetime.now(UTC)
 
         with self.assertRaises(ApplicationResourceNotFoundError):
             ctx.service.create_application(
@@ -253,7 +249,7 @@ class ApplicationServiceTests(unittest.TestCase):
             ctx.user_id,
             ApplicationCreate(job_id=ctx.job_id, resume_profile_id=ctx.profile_id),
         )
-        follow_up = datetime.now(timezone.utc)
+        follow_up = datetime.now(UTC)
 
         updated = ctx.service.update_application(
             None,

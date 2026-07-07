@@ -85,9 +85,7 @@ def list_jobs(
 def semantic_search_jobs(
     payload: SemanticSearchRequest,
     db: Session = Depends(get_db),
-    search_service: SemanticJobSearchService = Depends(
-        get_semantic_job_search_service
-    ),
+    search_service: SemanticJobSearchService = Depends(get_semantic_job_search_service),
     current_user: User = Depends(get_current_user),
 ) -> list[SemanticSearchResult]:
     """Rank ACTIVE jobs by semantic similarity to a natural-language query.
@@ -102,10 +100,9 @@ def semantic_search_jobs(
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Embedding provider is unavailable",
-        )
+        ) from None
     return [
-        SemanticSearchResult(job=job, similarity_score=score)
-        for job, score in results
+        SemanticSearchResult(job=job, similarity_score=score) for job, score in results
     ]
 
 
@@ -113,9 +110,7 @@ def semantic_search_jobs(
 def rebuild_job_embeddings(
     limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
-    embedding_service: JobEmbeddingService = Depends(
-        get_job_embedding_service
-    ),
+    embedding_service: JobEmbeddingService = Depends(get_job_embedding_service),
     _: User = Depends(require_role(UserRole.ADMIN)),
 ) -> EmbeddingRebuildResponse:
     """Batch-embed ACTIVE jobs whose embedding is pending or failed (admin)."""
@@ -127,9 +122,7 @@ def rebuild_job_embeddings(
 def embed_job(
     job_id: UUID,
     db: Session = Depends(get_db),
-    embedding_service: JobEmbeddingService = Depends(
-        get_job_embedding_service
-    ),
+    embedding_service: JobEmbeddingService = Depends(get_job_embedding_service),
     current_user: User = Depends(get_current_user),
 ) -> JobEmbeddingRead:
     """Generate (or refresh) the embedding for one job.
@@ -142,7 +135,7 @@ def embed_job(
     except JobNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-        )
+        ) from None
     return JobEmbeddingRead(
         job_id=job.id,
         embedding_status=job.embedding_status,

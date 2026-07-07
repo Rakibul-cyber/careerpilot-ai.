@@ -30,9 +30,7 @@ router = APIRouter(tags=["Interview Preparations"])
 def generate_interview_preparation(
     application_id: UUID,
     db: Session = Depends(get_db),
-    service: InterviewPreparationService = Depends(
-        get_interview_preparation_service
-    ),
+    service: InterviewPreparationService = Depends(get_interview_preparation_service),
     current_user: User = Depends(get_current_user),
 ) -> InterviewPreparationRead:
     """Generate or regenerate interview prep for an application."""
@@ -42,11 +40,11 @@ def generate_interview_preparation(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Application not found",
-        )
+        ) from None
     except InterviewPreparationApplicationNotReadyError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
-        )
+        ) from exc
 
 
 @router.get(
@@ -56,9 +54,7 @@ def generate_interview_preparation(
 def get_interview_preparation_for_application(
     application_id: UUID,
     db: Session = Depends(get_db),
-    service: InterviewPreparationService = Depends(
-        get_interview_preparation_service
-    ),
+    service: InterviewPreparationService = Depends(get_interview_preparation_service),
     current_user: User = Depends(get_current_user),
 ) -> InterviewPreparationRead:
     """Fetch the current user's prep package for one application."""
@@ -68,12 +64,12 @@ def get_interview_preparation_for_application(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Application not found",
-        )
+        ) from None
     except InterviewPreparationNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Interview preparation not found",
-        )
+        ) from None
 
 
 @router.get(
@@ -84,9 +80,7 @@ def list_interview_preparations(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
-    service: InterviewPreparationService = Depends(
-        get_interview_preparation_service
-    ),
+    service: InterviewPreparationService = Depends(get_interview_preparation_service),
     current_user: User = Depends(get_current_user),
 ) -> list[InterviewPreparationRead]:
     """List the current user's interview prep packages."""
@@ -100,9 +94,7 @@ def list_interview_preparations(
 def delete_interview_preparation(
     preparation_id: UUID,
     db: Session = Depends(get_db),
-    service: InterviewPreparationService = Depends(
-        get_interview_preparation_service
-    ),
+    service: InterviewPreparationService = Depends(get_interview_preparation_service),
     current_user: User = Depends(get_current_user),
 ) -> Response:
     """Soft-delete one of the current user's interview prep packages."""

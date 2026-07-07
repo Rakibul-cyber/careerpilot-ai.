@@ -1,7 +1,7 @@
 import sys
 import unittest
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -37,7 +37,7 @@ class FakeRecommendationRepository:
         self.created += 1
         if recommendation.id is None:
             recommendation.id = uuid.uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         recommendation.created_at = now
         recommendation.updated_at = now
         self.rows[
@@ -51,7 +51,7 @@ class FakeRecommendationRepository:
 
     def update(self, db, recommendation):
         self.updated += 1
-        recommendation.updated_at = datetime.now(timezone.utc)
+        recommendation.updated_at = datetime.now(UTC)
         return recommendation
 
     def get_by_profile_job(self, db, resume_profile_id, job_id, user_id):
@@ -70,8 +70,7 @@ class FakeRecommendationRepository:
         rows = [
             row
             for row in self.rows.values()
-            if row.resume_profile_id == resume_profile_id
-            and row.user_id == user_id
+            if row.resume_profile_id == resume_profile_id and row.user_id == user_id
         ]
         rows.sort(key=lambda row: row.final_score, reverse=True)
         return rows[skip : skip + limit]

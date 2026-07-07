@@ -4,7 +4,7 @@
 # logic here (file handling / extraction / primary rules live in the service).
 # List results are newest-first.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select, update
@@ -23,9 +23,7 @@ class ResumeRepository:
         db.refresh(resume)
         return resume
 
-    def get_by_id(
-        self, db: Session, resume_id: UUID, user_id: UUID
-    ) -> Resume | None:
+    def get_by_id(self, db: Session, resume_id: UUID, user_id: UUID) -> Resume | None:
         """Return the user's live resume with this id, or None."""
         stmt = select(Resume).where(
             Resume.id == resume_id,
@@ -58,7 +56,7 @@ class ResumeRepository:
 
     def soft_delete(self, db: Session, resume: Resume) -> Resume:
         """Mark the resume deleted by stamping deleted_at (UTC)."""
-        resume.deleted_at = datetime.now(timezone.utc)
+        resume.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(resume)
         return resume

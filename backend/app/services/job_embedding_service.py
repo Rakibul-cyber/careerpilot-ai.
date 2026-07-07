@@ -8,7 +8,7 @@
 # never crashes the caller. This milestone embeds only jobs — not resumes.
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -52,9 +52,7 @@ class JobEmbeddingService:
 
         Commits per job so one provider failure doesn't roll back the others.
         """
-        jobs = self.job_embedding_repository.list_active_needing_embedding(
-            db, limit
-        )
+        jobs = self.job_embedding_repository.list_active_needing_embedding(db, limit)
         succeeded = 0
         failed = 0
         for job in jobs:
@@ -74,13 +72,13 @@ class JobEmbeddingService:
             job.embedding_model = self.embedding_client.model_name
             job.embedding_status = JobEmbeddingStatus.COMPLETED
             job.embedding_error = None
-            job.embedded_at = datetime.now(timezone.utc)
+            job.embedded_at = datetime.now(UTC)
             logger.info("Job embedded job_id=%s", job.id)
         except Exception as exc:
             # Keep any previously-good vector; record the failure explicitly.
             job.embedding_status = JobEmbeddingStatus.FAILED
             job.embedding_error = f"{type(exc).__name__}: {exc}"
-            job.embedded_at = datetime.now(timezone.utc)
+            job.embedded_at = datetime.now(UTC)
             logger.exception("Job embedding failed job_id=%s", job.id)
 
     @staticmethod

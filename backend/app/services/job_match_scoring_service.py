@@ -29,10 +29,36 @@ FULL_EXPERIENCE_ROLES = 3
 # Tokens too generic to carry title signal.
 _STOPWORDS = frozenset(
     {
-        "a", "an", "and", "the", "of", "for", "to", "in", "on", "with", "at",
-        "by", "or", "as", "is", "be", "we", "you", "our", "your",
-        "senior", "junior", "lead", "staff", "principal",
-        "m", "f", "d", "mfd", "m_f_d",
+        "a",
+        "an",
+        "and",
+        "the",
+        "of",
+        "for",
+        "to",
+        "in",
+        "on",
+        "with",
+        "at",
+        "by",
+        "or",
+        "as",
+        "is",
+        "be",
+        "we",
+        "you",
+        "our",
+        "your",
+        "senior",
+        "junior",
+        "lead",
+        "staff",
+        "principal",
+        "m",
+        "f",
+        "d",
+        "mfd",
+        "m_f_d",
     }
 )
 
@@ -107,23 +133,18 @@ class JobMatchScoringService:
         job_text = " ".join(
             filter(
                 None,
-                [job.title, job.normalized_title, job.description,
-                 job.requirements],
+                [job.title, job.normalized_title, job.description, job.requirements],
             )
         ).lower()
 
         reasons: list[str] = []
         risks: list[str] = []
 
-        skill_score, matched_skills, missing_skills, skill_ratio = (
-            self._score_skills(profile, job_text, reasons, risks)
+        skill_score, matched_skills, missing_skills, skill_ratio = self._score_skills(
+            profile, job_text, reasons, risks
         )
-        title_score, title_ratio, title_hits = self._score_title(
-            profile, job, reasons
-        )
-        experience_score, role_count = self._score_experience(
-            profile, reasons, risks
-        )
+        title_score, title_ratio, title_hits = self._score_title(profile, job, reasons)
+        experience_score, role_count = self._score_experience(profile, reasons, risks)
         location_score, loc_detail = self._score_location_language(
             profile, job, job_text, reasons, risks
         )
@@ -133,8 +154,7 @@ class JobMatchScoringService:
                 100.0,
                 max(
                     0.0,
-                    skill_score + title_score + experience_score
-                    + location_score,
+                    skill_score + title_score + experience_score + location_score,
                 ),
             ),
             2,
@@ -188,13 +208,16 @@ class JobMatchScoringService:
         ratio = len(matched) / len(skills)
         score = ratio * WEIGHT_SKILLS
         reasons.append(
-            f"Matched {len(matched)}/{len(skills)} of your skills in the job "
-            f"posting."
+            f"Matched {len(matched)}/{len(skills)} of your skills in the job posting."
         )
         if not matched:
             risks.append("no_skill_overlap")
-        return score, sorted(matched, key=str.lower), \
-            sorted(missing, key=str.lower), ratio
+        return (
+            score,
+            sorted(matched, key=str.lower),
+            sorted(missing, key=str.lower),
+            ratio,
+        )
 
     def _score_title(self, profile, job, reasons):
         title_tokens = _tokenize(job.normalized_title or job.title)
@@ -214,25 +237,19 @@ class JobMatchScoringService:
         score = ratio * WEIGHT_TITLE
         if hits:
             reasons.append(
-                "Job title overlaps your background on: "
-                + ", ".join(hits)
-                + "."
+                "Job title overlaps your background on: " + ", ".join(hits) + "."
             )
         return score, ratio, hits
 
     def _score_experience(self, profile, reasons, risks):
-        roles = [
-            e for e in (profile.work_experience or []) if isinstance(e, dict)
-        ]
+        roles = [e for e in (profile.work_experience or []) if isinstance(e, dict)]
         count = len(roles)
         if count == 0:
             risks.append("no_work_experience")
             reasons.append("Profile lists no work experience.")
             return 0.0, 0
         ratio = min(count / FULL_EXPERIENCE_ROLES, 1.0)
-        reasons.append(
-            f"{count} prior role(s) on your profile."
-        )
+        reasons.append(f"{count} prior role(s) on your profile.")
         return ratio * WEIGHT_EXPERIENCE, count
 
     def _score_location_language(self, profile, job, job_text, reasons, risks):
@@ -253,15 +270,13 @@ class JobMatchScoringService:
         elif _tokenize(cand_loc) & _tokenize(job_loc):
             loc_points = WEIGHT_LOCATION
             detail["location"] = "match"
-            reasons.append(f"Your location matches the job location "
-                           f"({job_loc}).")
+            reasons.append(f"Your location matches the job location ({job_loc}).")
         else:
             loc_points = 0.0
             detail["location"] = "mismatch"
             risks.append("location_mismatch")
             reasons.append(
-                f"Your location ({cand_loc}) differs from the job location "
-                f"({job_loc})."
+                f"Your location ({cand_loc}) differs from the job location ({job_loc})."
             )
 
         # --- language (5) ---

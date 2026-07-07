@@ -7,8 +7,4 @@ def escape_like(value: str) -> str:
 
     Pair with ``.ilike(f"%{escape_like(v)}%", escape="\\\\")``.
     """
-    return (
-        value.replace("\\", "\\\\")
-        .replace("%", "\\%")
-        .replace("_", "\\_")
-    )
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")

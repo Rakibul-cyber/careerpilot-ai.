@@ -4,7 +4,7 @@
 # list_due_alerts is a system query (not user-scoped) used by the runner to find
 # alerts whose next_run_at has arrived. No business logic here.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -16,9 +16,7 @@ from app.models.job_alert import JobAlert
 class JobAlertRepository:
     """Persistence operations for :class:`JobAlert`."""
 
-    def get_by_id(
-        self, db: Session, alert_id: UUID, user_id: UUID
-    ) -> JobAlert | None:
+    def get_by_id(self, db: Session, alert_id: UUID, user_id: UUID) -> JobAlert | None:
         """Return the user's live alert with this id, or None."""
         stmt = select(JobAlert).where(
             JobAlert.id == alert_id,
@@ -86,7 +84,7 @@ class JobAlertRepository:
 
     def soft_delete(self, db: Session, alert: JobAlert) -> JobAlert:
         """Mark the alert deleted by stamping deleted_at (UTC)."""
-        alert.deleted_at = datetime.now(timezone.utc)
+        alert.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(alert)
         return alert

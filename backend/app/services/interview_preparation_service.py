@@ -1,7 +1,7 @@
 # Business-logic layer for AI interview preparation (M34).
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -50,15 +50,10 @@ class InterviewPreparationService:
         interview_client: AIInterviewPreparationClient | None = None,
     ) -> None:
         self.interview_preparation_repository = (
-            interview_preparation_repository
-            or InterviewPreparationRepository()
+            interview_preparation_repository or InterviewPreparationRepository()
         )
-        self.application_repository = (
-            application_repository or ApplicationRepository()
-        )
-        self.job_match_repository = (
-            job_match_repository or JobMatchRepository()
-        )
+        self.application_repository = application_repository or ApplicationRepository()
+        self.job_match_repository = job_match_repository or JobMatchRepository()
         self.interview_client = (
             interview_client or AnthropicInterviewPreparationClient()
         )
@@ -66,9 +61,7 @@ class InterviewPreparationService:
     def generate(
         self, db: Session, user_id: uuid.UUID, application_id: uuid.UUID
     ) -> InterviewPreparation:
-        application = self._require_ready_application(
-            db, user_id, application_id
-        )
+        application = self._require_ready_application(db, user_id, application_id)
         preparation = self._get_or_new(db, user_id, application_id)
         preparation.generation_status = InterviewPreparationStatus.PENDING
         preparation.generation_error = None
@@ -80,16 +73,10 @@ class InterviewPreparationService:
                 application=self._application_context(application),
                 job=self._job_context(application.job),
                 profile=self._profile_context(application.resume_profile),
-                cover_letter=self._cover_letter_context(
-                    application.cover_letter
-                ),
-                match=self._match_context(
-                    self._find_match(db, user_id, application)
-                ),
+                cover_letter=self._cover_letter_context(application.cover_letter),
+                match=self._match_context(self._find_match(db, user_id, application)),
             )
-            parsed = InterviewPreparationAIOutput.model_validate_json(
-                raw_response
-            )
+            parsed = InterviewPreparationAIOutput.model_validate_json(raw_response)
             self._apply_success(preparation, parsed, raw_response)
             logger.info(
                 "Interview preparation generated user_id=%s application_id=%s",
@@ -99,31 +86,24 @@ class InterviewPreparationService:
         except Exception as exc:
             self._apply_failure(preparation, raw_response, exc)
             logger.exception(
-                "Interview preparation generation failed user_id=%s "
-                "application_id=%s",
+                "Interview preparation generation failed user_id=%s application_id=%s",
                 user_id,
                 application_id,
             )
 
         if preparation.id is None:
-            return self.interview_preparation_repository.create(
-                db, preparation
-            )
+            return self.interview_preparation_repository.create(db, preparation)
         return self.interview_preparation_repository.update(db, preparation)
 
     def get_by_application(
         self, db: Session, user_id: uuid.UUID, application_id: uuid.UUID
     ) -> InterviewPreparation:
         self._require_application(db, user_id, application_id)
-        preparation = (
-            self.interview_preparation_repository.get_by_application(
-                db, application_id, user_id
-            )
+        preparation = self.interview_preparation_repository.get_by_application(
+            db, application_id, user_id
         )
         if preparation is None:
-            raise InterviewPreparationNotFoundError(
-                "Interview preparation not found"
-            )
+            raise InterviewPreparationNotFoundError("Interview preparation not found")
         return preparation
 
     def list_by_user(
@@ -141,9 +121,7 @@ class InterviewPreparationService:
         )
         if preparation is None:
             return None
-        return self.interview_preparation_repository.soft_delete(
-            db, preparation
-        )
+        return self.interview_preparation_repository.soft_delete(db, preparation)
 
     # --- helpers ----------------------------------------------------------
 
@@ -160,21 +138,16 @@ class InterviewPreparationService:
         )
 
     def _require_application(self, db, user_id, application_id):
-        application = self.application_repository.get_by_id(
-            db, application_id, user_id
-        )
+        application = self.application_repository.get_by_id(db, application_id, user_id)
         if application is None:
-            raise InterviewPreparationApplicationNotFoundError(
-                "Application not found"
-            )
+            raise InterviewPreparationApplicationNotFoundError("Application not found")
         return application
 
     def _require_ready_application(self, db, user_id, application_id):
         application = self._require_application(db, user_id, application_id)
         if application.status == ApplicationStatus.DRAFT:
             raise InterviewPreparationApplicationNotReadyError(
-                "Interview preparation requires application status READY or "
-                "later"
+                "Interview preparation requires application status READY or later"
             )
         return application
 
@@ -201,7 +174,7 @@ class InterviewPreparationService:
         preparation.estimated_difficulty = parsed.estimated_difficulty
         preparation.generation_status = InterviewPreparationStatus.COMPLETED
         preparation.generation_error = None
-        preparation.generated_at = datetime.now(timezone.utc)
+        preparation.generated_at = datetime.now(UTC)
 
     @staticmethod
     def _apply_failure(preparation, raw_response, exc):
@@ -217,7 +190,7 @@ class InterviewPreparationService:
         preparation.estimated_difficulty = None
         preparation.generation_status = InterviewPreparationStatus.FAILED
         preparation.generation_error = f"{type(exc).__name__}: {exc}"
-        preparation.generated_at = datetime.now(timezone.utc)
+        preparation.generated_at = datetime.now(UTC)
 
     @staticmethod
     def _application_context(application) -> dict:

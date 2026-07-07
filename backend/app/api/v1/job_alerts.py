@@ -36,12 +36,12 @@ def create_job_alert(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Saved search not found",
-        )
+        ) from None
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Job alert for this saved search already exists",
-        )
+        ) from None
 
 
 @router.get("", response_model=list[JobAlertRead])

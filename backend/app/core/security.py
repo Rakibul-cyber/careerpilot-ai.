@@ -4,7 +4,7 @@
 # passwords are never logged, stored, or returned — only bcrypt hashes leave
 # this module.
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from jose import jwt
 from passlib.context import CryptContext
@@ -32,9 +32,7 @@ def verify_password(plain_password: str, hashed_password: str | None) -> bool:
 
 def create_access_token(subject: str) -> str:
     """Create a signed JWT access token for the given subject (user id)."""
-    expire = datetime.now(timezone.utc) + timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
+    expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {"sub": subject, "type": "access", "exp": expire}
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 

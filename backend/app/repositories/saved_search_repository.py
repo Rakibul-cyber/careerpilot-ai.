@@ -4,7 +4,7 @@
 # (deleted_at IS NULL). No business logic here (uniqueness checks live in the
 # service). List results are newest-first.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -27,9 +27,7 @@ class SavedSearchRepository:
         )
         return db.execute(stmt).scalar_one_or_none()
 
-    def get_by_name(
-        self, db: Session, user_id: UUID, name: str
-    ) -> SavedSearch | None:
+    def get_by_name(self, db: Session, user_id: UUID, name: str) -> SavedSearch | None:
         """Return the user's live saved search with this name, or None."""
         stmt = select(SavedSearch).where(
             SavedSearch.user_id == user_id,
@@ -69,7 +67,7 @@ class SavedSearchRepository:
 
     def soft_delete(self, db: Session, saved_search: SavedSearch) -> SavedSearch:
         """Mark the saved search deleted by stamping deleted_at (UTC)."""
-        saved_search.deleted_at = datetime.now(timezone.utc)
+        saved_search.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(saved_search)
         return saved_search

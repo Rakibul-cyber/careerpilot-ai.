@@ -10,7 +10,7 @@
 #   * job must be ACTIVE (else 409)
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -60,9 +60,7 @@ class JobMatchService:
             resume_profile_repository or ResumeProfileRepository()
         )
         self.job_repository = job_repository or JobRepository()
-        self.job_match_repository = (
-            job_match_repository or JobMatchRepository()
-        )
+        self.job_match_repository = job_match_repository or JobMatchRepository()
         self.scoring_service = scoring_service or JobMatchScoringService()
 
     def match(
@@ -73,9 +71,7 @@ class JobMatchService:
         job_id: uuid.UUID,
     ) -> JobMatch:
         """Score a profile against a job and upsert the match result."""
-        profile = self._require_completed_profile(
-            db, user_id, resume_profile_id
-        )
+        profile = self._require_completed_profile(db, user_id, resume_profile_id)
 
         job = self.job_repository.get_by_id(db, job_id)
         if job is None:
@@ -108,7 +104,7 @@ class JobMatchService:
         match.match_reasons = result.match_reasons
         match.risk_flags = result.risk_flags
         match.raw_match_data = result.raw_match_data
-        match.matched_at = datetime.now(timezone.utc)
+        match.matched_at = datetime.now(UTC)
 
         logger.info(
             "Job matched user_id=%s profile_id=%s job_id=%s score=%.2f",

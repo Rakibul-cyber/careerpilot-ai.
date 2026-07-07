@@ -36,4 +36,4 @@ def get_job_match(
     except JobMatchNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Job match not found"
-        )
+        ) from None

@@ -1,6 +1,6 @@
 # Data-access layer for InterviewPreparation.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -65,7 +65,7 @@ class InterviewPreparationRepository:
     def soft_delete(
         self, db: Session, preparation: InterviewPreparation
     ) -> InterviewPreparation:
-        preparation.deleted_at = datetime.now(timezone.utc)
+        preparation.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(preparation)
         return preparation

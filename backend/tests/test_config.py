@@ -59,9 +59,7 @@ class SettingsTests(unittest.TestCase):
             {
                 "SECRET_KEY": "dev-secret",
                 "DEBUG": "false",
-                "CORS_ALLOWED_ORIGINS": (
-                    "http://localhost:3000,http://localhost:5173"
-                ),
+                "CORS_ALLOWED_ORIGINS": ("http://localhost:3000,http://localhost:5173"),
             },
             clear=True,
         ):

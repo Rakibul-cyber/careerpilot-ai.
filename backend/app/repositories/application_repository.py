@@ -2,7 +2,7 @@
 #
 # Persistence only: no ownership/resource validation and no workflow rules.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import or_, select
@@ -90,10 +90,8 @@ class ApplicationRepository:
         )
         return list(db.execute(stmt).scalars().all())
 
-    def soft_delete(
-        self, db: Session, application: Application
-    ) -> Application:
-        application.deleted_at = datetime.now(timezone.utc)
+    def soft_delete(self, db: Session, application: Application) -> Application:
+        application.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(application)
         return application

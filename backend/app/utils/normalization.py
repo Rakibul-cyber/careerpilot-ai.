@@ -36,9 +36,7 @@ def normalize_company_name(name: str) -> str:
     """Normalize a company name and drop legal-form suffixes (gmbh, llc, ...)."""
     text = normalize_text(name)
     tokens = [
-        token
-        for token in text.split(" ")
-        if token and token not in _COMPANY_SUFFIXES
+        token for token in text.split(" ") if token and token not in _COMPANY_SUFFIXES
     ]
     return " ".join(tokens)
 

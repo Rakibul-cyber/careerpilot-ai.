@@ -39,7 +39,11 @@ def configure_logging() -> None:
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(
         RequestIdFormatter(
-            fmt="%(asctime)s %(levelname)s %(name)s request_id=%(request_id)s execution_id=%(execution_id)s %(message)s",
+            fmt=(
+                "%(asctime)s %(levelname)s %(name)s "
+                "request_id=%(request_id)s "
+                "execution_id=%(execution_id)s %(message)s"
+            ),
             datefmt="%Y-%m-%d %H:%M:%S",
         )
     )

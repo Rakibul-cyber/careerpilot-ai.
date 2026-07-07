@@ -36,7 +36,7 @@ def register_user(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="User with this email already exists",
-        )
+        ) from None
     return user
 
 

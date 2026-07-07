@@ -39,7 +39,7 @@ def create_saved_search(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Saved search with this name already exists",
-        )
+        ) from None
 
 
 @router.get("", response_model=list[SavedSearchRead])
@@ -51,9 +51,7 @@ def list_saved_searches(
     current_user: User = Depends(get_current_user),
 ) -> list[SavedSearchRead]:
     """List the current user's saved searches (newest first), paginated."""
-    return service.list_saved_searches(
-        db, current_user.id, skip=skip, limit=limit
-    )
+    return service.list_saved_searches(db, current_user.id, skip=skip, limit=limit)
 
 
 @router.get("/{saved_search_id}", response_model=SavedSearchRead)
@@ -64,9 +62,7 @@ def get_saved_search(
     current_user: User = Depends(get_current_user),
 ) -> SavedSearchRead:
     """Fetch one of the current user's saved searches by id."""
-    saved_search = service.get_saved_search(
-        db, current_user.id, saved_search_id
-    )
+    saved_search = service.get_saved_search(db, current_user.id, saved_search_id)
     if saved_search is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -92,7 +88,7 @@ def update_saved_search(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Saved search with this name already exists",
-        )
+        ) from None
     if saved_search is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -109,9 +105,7 @@ def delete_saved_search(
     current_user: User = Depends(get_current_user),
 ) -> Response:
     """Soft-delete one of the current user's saved searches."""
-    saved_search = service.delete_saved_search(
-        db, current_user.id, saved_search_id
-    )
+    saved_search = service.delete_saved_search(db, current_user.id, saved_search_id)
     if saved_search is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

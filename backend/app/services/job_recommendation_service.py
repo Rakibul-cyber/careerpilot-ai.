@@ -11,7 +11,7 @@
 # per (profile, job) rather than duplicating.
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -30,7 +30,7 @@ from app.services.semantic_job_search_service import SemanticJobSearchService
 logger = get_logger(__name__)
 
 SEMANTIC_WEIGHT = 40.0  # applied to semantic_score in [0, 1]
-MATCH_WEIGHT = 0.60     # applied to match_score in [0, 100]
+MATCH_WEIGHT = 0.60  # applied to match_score in [0, 100]
 
 
 class ResumeProfileNotFoundError(Exception):
@@ -49,9 +49,7 @@ class JobRecommendationService:
     def __init__(
         self,
         resume_profile_repository: ResumeProfileRepository | None = None,
-        job_recommendation_repository: (
-            JobRecommendationRepository | None
-        ) = None,
+        job_recommendation_repository: (JobRecommendationRepository | None) = None,
         semantic_search_service: SemanticJobSearchService | None = None,
         job_match_service: JobMatchService | None = None,
     ) -> None:
@@ -74,9 +72,7 @@ class JobRecommendationService:
         limit: int = 20,
     ) -> list[JobRecommendation]:
         """Generate ranked recommendations for a completed profile (upsert)."""
-        profile = self._require_completed_profile(
-            db, user_id, resume_profile_id
-        )
+        profile = self._require_completed_profile(db, user_id, resume_profile_id)
 
         query_text = self._build_query_text(profile)
         # Semantic search already excludes soft-deleted, non-ACTIVE, and
@@ -87,13 +83,10 @@ class JobRecommendationService:
         for job, semantic_score in hits:
             semantic_score = self._semantic_score(semantic_score)
             # Reuse M29: upserts one JobMatch per (profile, job).
-            match = self.job_match_service.match(
-                db, user_id, resume_profile_id, job.id
-            )
+            match = self.job_match_service.match(db, user_id, resume_profile_id, job.id)
             match_score = match.overall_score
             final_score = round(
-                semantic_score * SEMANTIC_WEIGHT
-                + match_score * MATCH_WEIGHT,
+                semantic_score * SEMANTIC_WEIGHT + match_score * MATCH_WEIGHT,
                 2,
             )
             recommendations.append(
@@ -175,9 +168,7 @@ class JobRecommendationService:
         rec.semantic_score = round(float(semantic_score), 6)
         rec.match_score = match_score
         rec.final_score = final_score
-        rec.recommendation_reasons = self._reasons(
-            semantic_score, match_score, match
-        )
+        rec.recommendation_reasons = self._reasons(semantic_score, match_score, match)
         rec.risk_flags = match.risk_flags or []
         rec.raw_recommendation_data = {
             "semantic_score": round(float(semantic_score), 6),
@@ -188,7 +179,7 @@ class JobRecommendationService:
             },
             "job_match_id": str(match.id),
         }
-        rec.recommended_at = datetime.now(timezone.utc)
+        rec.recommended_at = datetime.now(UTC)
 
         if is_new:
             return self.job_recommendation_repository.create(db, rec)
@@ -215,9 +206,7 @@ class JobRecommendationService:
         if profile.summary:
             parts.append(profile.summary)
         if profile.skills:
-            parts.append(
-                "Skills: " + ", ".join(str(s) for s in profile.skills)
-            )
+            parts.append("Skills: " + ", ".join(str(s) for s in profile.skills))
         titles = [
             e.get("title")
             for e in (profile.work_experience or [])

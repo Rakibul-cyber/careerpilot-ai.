@@ -27,18 +27,14 @@ router = APIRouter(prefix="/job-recommendations", tags=["Job Recommendations"])
 def get_job_recommendation(
     recommendation_id: UUID,
     db: Session = Depends(get_db),
-    service: JobRecommendationService = Depends(
-        get_job_recommendation_service
-    ),
+    service: JobRecommendationService = Depends(get_job_recommendation_service),
     current_user: User = Depends(get_current_user),
 ) -> JobRecommendationRead:
     """Fetch one of the current user's recommendations by id."""
     try:
-        return service.get_recommendation(
-            db, current_user.id, recommendation_id
-        )
+        return service.get_recommendation(db, current_user.id, recommendation_id)
     except JobRecommendationNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Recommendation not found",
-        )
+        ) from None

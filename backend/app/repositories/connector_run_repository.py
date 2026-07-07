@@ -39,9 +39,7 @@ class ConnectorRunRepository:
         )
         return db.execute(stmt).scalar_one_or_none()
 
-    def list(
-        self, db: Session, skip: int = 0, limit: int = 50
-    ) -> list[ConnectorRun]:
+    def list(self, db: Session, skip: int = 0, limit: int = 50) -> list[ConnectorRun]:
         """Return a page of live connector runs, newest run first."""
         stmt = (
             select(ConnectorRun)

@@ -23,10 +23,7 @@ class SavedSearchService:
     def create_saved_search(
         self, db: Session, user_id: UUID, data: SavedSearchCreate
     ) -> SavedSearch:
-        if (
-            self.saved_search_repository.get_by_name(db, user_id, data.name)
-            is not None
-        ):
+        if self.saved_search_repository.get_by_name(db, user_id, data.name) is not None:
             raise ValueError("Saved search with this name already exists")
 
         saved_search = SavedSearch(user_id=user_id, **data.model_dump())
@@ -35,9 +32,7 @@ class SavedSearchService:
     def get_saved_search(
         self, db: Session, user_id: UUID, saved_search_id: UUID
     ) -> SavedSearch | None:
-        return self.saved_search_repository.get_by_id(
-            db, saved_search_id, user_id
-        )
+        return self.saved_search_repository.get_by_id(db, saved_search_id, user_id)
 
     def list_saved_searches(
         self, db: Session, user_id: UUID, skip: int = 0, limit: int = 50
@@ -63,9 +58,7 @@ class SavedSearchService:
 
         new_name = fields.get("name")
         if new_name is not None and new_name != saved_search.name:
-            existing = self.saved_search_repository.get_by_name(
-                db, user_id, new_name
-            )
+            existing = self.saved_search_repository.get_by_name(db, user_id, new_name)
             if existing is not None and existing.id != saved_search.id:
                 raise ValueError("Saved search with this name already exists")
 

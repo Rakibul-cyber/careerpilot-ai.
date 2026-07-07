@@ -31,9 +31,7 @@ from app.services.cover_letter_service import (
 router = APIRouter(prefix="/cover-letters", tags=["Cover Letters"])
 
 
-@router.post(
-    "", response_model=CoverLetterRead, status_code=status.HTTP_201_CREATED
-)
+@router.post("", response_model=CoverLetterRead, status_code=status.HTTP_201_CREATED)
 def create_cover_letter(
     payload: CoverLetterCreate,
     db: Session = Depends(get_db),
@@ -62,19 +60,19 @@ def create_cover_letter(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resume profile or job match not found",
-        )
+        ) from None
     except JobNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-        )
+        ) from None
     except (ResumeProfileNotCompletedError, JobNotActiveError) as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
-        )
+        ) from exc
     except JobMatchMismatchError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
-        )
+        ) from exc
 
 
 @router.get("", response_model=list[CoverLetterRead])
@@ -86,9 +84,7 @@ def list_cover_letters(
     current_user: User = Depends(get_current_user),
 ) -> list[CoverLetterRead]:
     """List the current user's cover letters (newest first), paginated."""
-    return service.list_cover_letters(
-        db, current_user.id, skip=skip, limit=limit
-    )
+    return service.list_cover_letters(db, current_user.id, skip=skip, limit=limit)
 
 
 @router.get("/{cover_letter_id}", response_model=CoverLetterRead)
@@ -105,7 +101,7 @@ def get_cover_letter(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Cover letter not found",
-        )
+        ) from None
 
 
 @router.delete("/{cover_letter_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -116,9 +112,7 @@ def delete_cover_letter(
     current_user: User = Depends(get_current_user),
 ) -> Response:
     """Soft-delete one of the current user's cover letters."""
-    deleted = service.delete_cover_letter(
-        db, current_user.id, cover_letter_id
-    )
+    deleted = service.delete_cover_letter(db, current_user.id, cover_letter_id)
     if deleted is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

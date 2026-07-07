@@ -40,9 +40,7 @@ class OpenAIEmbeddingClient(AIEmbeddingClient):
             try:
                 import openai
             except ImportError as exc:  # pragma: no cover - deploy misconfig
-                raise EmbeddingAIError(
-                    "openai SDK is not installed"
-                ) from exc
+                raise EmbeddingAIError("openai SDK is not installed") from exc
             self._client = openai.OpenAI(api_key=self._api_key)
         return self._client
 

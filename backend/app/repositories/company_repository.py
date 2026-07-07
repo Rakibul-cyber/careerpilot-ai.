@@ -7,7 +7,7 @@
 # class namespace, so keep return hints (`-> list[Company]`) as strings.
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -37,9 +37,7 @@ class CompanyRepository:
         )
         return db.execute(stmt).scalar_one_or_none()
 
-    def list(
-        self, db: Session, skip: int = 0, limit: int = 50
-    ) -> list[Company]:
+    def list(self, db: Session, skip: int = 0, limit: int = 50) -> list[Company]:
         """Return a page of live companies, newest first."""
         stmt = (
             select(Company)
@@ -65,7 +63,7 @@ class CompanyRepository:
 
     def soft_delete(self, db: Session, company: Company) -> Company:
         """Mark the company deleted by stamping deleted_at (UTC)."""
-        company.deleted_at = datetime.now(timezone.utc)
+        company.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(company)
         return company

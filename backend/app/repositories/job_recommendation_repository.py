@@ -4,7 +4,7 @@
 # logic here (that lives in JobRecommendationService). Lists are ranked by
 # final_score descending.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -89,7 +89,7 @@ class JobRecommendationRepository:
         self, db: Session, recommendation: JobRecommendation
     ) -> JobRecommendation:
         """Mark the recommendation deleted by stamping deleted_at (UTC)."""
-        recommendation.deleted_at = datetime.now(timezone.utc)
+        recommendation.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(recommendation)
         return recommendation

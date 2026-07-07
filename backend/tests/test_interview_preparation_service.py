@@ -2,7 +2,7 @@ import json
 import sys
 import unittest
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -26,9 +26,7 @@ def good_ai_payload(summary="Prepare for backend interview"):
     return json.dumps(
         {
             "summary": summary,
-            "strengths": [
-                {"title": "Python", "reason": "Listed on the profile."}
-            ],
+            "strengths": [{"title": "Python", "reason": "Listed on the profile."}],
             "weaknesses": [
                 {
                     "title": "System design depth",
@@ -112,18 +110,16 @@ class FakePreparationRepository:
         self.created += 1
         if preparation.id is None:
             preparation.id = uuid.uuid4()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         preparation.created_at = now
         preparation.updated_at = now
         preparation.deleted_at = None
-        self.rows[(preparation.application_id, preparation.user_id)] = (
-            preparation
-        )
+        self.rows[(preparation.application_id, preparation.user_id)] = preparation
         return preparation
 
     def update(self, db, preparation):
         self.updated += 1
-        preparation.updated_at = datetime.now(timezone.utc)
+        preparation.updated_at = datetime.now(UTC)
         return preparation
 
     def get_by_application(self, db, application_id, user_id):
@@ -151,7 +147,7 @@ class FakePreparationRepository:
         return rows[skip : skip + limit]
 
     def soft_delete(self, db, preparation):
-        preparation.deleted_at = datetime.now(timezone.utc)
+        preparation.deleted_at = datetime.now(UTC)
         return preparation
 
 
@@ -212,7 +208,7 @@ def make_application(user_id, status=ApplicationStatus.READY, deleted=False):
         interview_date=None,
         company_response=None,
         notes=None,
-        deleted_at=datetime.now(timezone.utc) if deleted else None,
+        deleted_at=datetime.now(UTC) if deleted else None,
     )
 
 
@@ -220,9 +216,7 @@ def make_service(application, client):
     prep_repository = FakePreparationRepository()
     service = InterviewPreparationService(
         interview_preparation_repository=prep_repository,
-        application_repository=FakeApplicationRepository(
-            {application.id: application}
-        ),
+        application_repository=FakeApplicationRepository({application.id: application}),
         job_match_repository=FakeJobMatchRepository(),
         interview_client=client,
     )
@@ -243,9 +237,7 @@ class InterviewPreparationServiceTests(unittest.TestCase):
             preparation.generation_status,
             InterviewPreparationStatus.COMPLETED,
         )
-        self.assertEqual(
-            preparation.estimated_difficulty, InterviewDifficulty.MEDIUM
-        )
+        self.assertEqual(preparation.estimated_difficulty, InterviewDifficulty.MEDIUM)
         self.assertEqual(repository.created, 1)
         self.assertEqual(repository.updated, 0)
         self.assertIsInstance(preparation.technical_questions[0], dict)
@@ -274,9 +266,7 @@ class InterviewPreparationServiceTests(unittest.TestCase):
     def test_draft_application_rejected(self):
         user_id = uuid.uuid4()
         application = make_application(user_id, status=ApplicationStatus.DRAFT)
-        service, _ = make_service(
-            application, FakeInterviewClient([good_ai_payload()])
-        )
+        service, _ = make_service(application, FakeInterviewClient([good_ai_payload()]))
 
         with self.assertRaises(InterviewPreparationApplicationNotReadyError):
             service.generate(None, user_id, application.id)
@@ -284,9 +274,7 @@ class InterviewPreparationServiceTests(unittest.TestCase):
     def test_deleted_application_rejected(self):
         user_id = uuid.uuid4()
         application = make_application(user_id, deleted=True)
-        service, _ = make_service(
-            application, FakeInterviewClient([good_ai_payload()])
-        )
+        service, _ = make_service(application, FakeInterviewClient([good_ai_payload()]))
 
         with self.assertRaises(InterviewPreparationApplicationNotFoundError):
             service.generate(None, user_id, application.id)
@@ -294,9 +282,7 @@ class InterviewPreparationServiceTests(unittest.TestCase):
     def test_cross_user_application_returns_not_found(self):
         user_id = uuid.uuid4()
         application = make_application(user_id)
-        service, _ = make_service(
-            application, FakeInterviewClient([good_ai_payload()])
-        )
+        service, _ = make_service(application, FakeInterviewClient([good_ai_payload()]))
 
         with self.assertRaises(InterviewPreparationApplicationNotFoundError):
             service.generate(None, uuid.uuid4(), application.id)
@@ -306,9 +292,7 @@ class InterviewPreparationServiceTests(unittest.TestCase):
         application = make_application(user_id)
         service, _ = make_service(
             application,
-            FakeInterviewClient(
-                [InterviewPreparationAIError("provider unavailable")]
-            ),
+            FakeInterviewClient([InterviewPreparationAIError("provider unavailable")]),
         )
 
         preparation = service.generate(None, user_id, application.id)
@@ -321,9 +305,7 @@ class InterviewPreparationServiceTests(unittest.TestCase):
     def test_invalid_ai_json_is_stored_as_failed(self):
         user_id = uuid.uuid4()
         application = make_application(user_id)
-        service, _ = make_service(
-            application, FakeInterviewClient(['{"summary": ""}'])
-        )
+        service, _ = make_service(application, FakeInterviewClient(['{"summary": ""}']))
 
         preparation = service.generate(None, user_id, application.id)
 
@@ -336,18 +318,14 @@ class InterviewPreparationServiceTests(unittest.TestCase):
     def test_owner_scoped_get_list_and_soft_delete(self):
         user_id = uuid.uuid4()
         application = make_application(user_id)
-        service, _ = make_service(
-            application, FakeInterviewClient([good_ai_payload()])
-        )
+        service, _ = make_service(application, FakeInterviewClient([good_ai_payload()]))
         preparation = service.generate(None, user_id, application.id)
 
         self.assertEqual(
             service.get_by_application(None, user_id, application.id).id,
             preparation.id,
         )
-        self.assertEqual(
-            service.list_by_user(None, user_id)[0].id, preparation.id
-        )
+        self.assertEqual(service.list_by_user(None, user_id)[0].id, preparation.id)
         with self.assertRaises(InterviewPreparationApplicationNotFoundError):
             service.get_by_application(None, uuid.uuid4(), application.id)
 

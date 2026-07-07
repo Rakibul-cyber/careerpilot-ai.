@@ -23,9 +23,7 @@ class ConnectorRunStatus(str, enum.Enum):
 class ConnectorRun(BaseModel, Base):
     __tablename__ = "connector_runs"
 
-    connector_name: Mapped[str] = mapped_column(
-        String(100), nullable=False, index=True
-    )
+    connector_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
 
     status: Mapped[ConnectorRunStatus] = mapped_column(
         Enum(

@@ -28,13 +28,9 @@ class JobService:
         skip: int = 0,
         limit: int = 50,
     ) -> list[Job]:
-        return self.job_repository.search(
-            db, filters=filters, skip=skip, limit=limit
-        )
+        return self.job_repository.search(db, filters=filters, skip=skip, limit=limit)
 
-    def list_jobs(
-        self, db: Session, skip: int = 0, limit: int = 50
-    ) -> list[Job]:
+    def list_jobs(self, db: Session, skip: int = 0, limit: int = 50) -> list[Job]:
         return self.job_repository.list(db, skip=skip, limit=limit)
 
     def list_jobs_by_company(

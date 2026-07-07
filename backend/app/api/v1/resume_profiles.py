@@ -30,7 +30,11 @@ from app.services.job_match_service import (
 )
 from app.services.job_recommendation_service import (
     JobRecommendationService,
+)
+from app.services.job_recommendation_service import (
     ResumeProfileNotCompletedError as RecoProfileNotCompletedError,
+)
+from app.services.job_recommendation_service import (
     ResumeProfileNotFoundError as RecoProfileNotFoundError,
 )
 from app.services.resume_parser_service import (
@@ -76,19 +80,19 @@ def match_profile_to_job(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resume profile not found",
-        )
+        ) from None
     except JobNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
-        )
+        ) from None
     except ResumeProfileNotCompletedError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
-        )
+        ) from exc
     except JobNotActiveError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
-        )
+        ) from exc
 
 
 @router.get("/{profile_id}/matches", response_model=list[JobMatchRead])
@@ -109,7 +113,7 @@ def list_profile_matches(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resume profile not found",
-        )
+        ) from None
 
 
 @router.post(
@@ -120,9 +124,7 @@ def generate_recommendations(
     profile_id: UUID,
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
-    service: JobRecommendationService = Depends(
-        get_job_recommendation_service
-    ),
+    service: JobRecommendationService = Depends(get_job_recommendation_service),
     current_user: User = Depends(get_current_user),
 ) -> list[JobRecommendationRead]:
     """Generate ranked job recommendations for a completed profile (upsert).
@@ -133,23 +135,21 @@ def generate_recommendations(
     down -> 502. Re-running updates existing recommendations.
     """
     try:
-        return service.recommend(
-            db, current_user.id, profile_id, limit=limit
-        )
+        return service.recommend(db, current_user.id, profile_id, limit=limit)
     except RecoProfileNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resume profile not found",
-        )
+        ) from None
     except RecoProfileNotCompletedError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
-        )
+        ) from exc
     except EmbeddingAIError:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Embedding provider is unavailable",
-        )
+        ) from None
 
 
 @router.get(
@@ -161,9 +161,7 @@ def list_recommendations(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
-    service: JobRecommendationService = Depends(
-        get_job_recommendation_service
-    ),
+    service: JobRecommendationService = Depends(get_job_recommendation_service),
     current_user: User = Depends(get_current_user),
 ) -> list[JobRecommendationRead]:
     """List recommendations for one of the user's profiles (best score first)."""
@@ -175,4 +173,4 @@ def list_recommendations(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resume profile not found",
-        )
+        ) from None

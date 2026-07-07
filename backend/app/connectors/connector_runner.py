@@ -38,13 +38,9 @@ class ConnectorRunner:
         connector_run_service: ConnectorRunService | None = None,
     ) -> None:
         self.ingestion_service = ingestion_service or JobIngestionService()
-        self.connector_run_service = (
-            connector_run_service or ConnectorRunService()
-        )
+        self.connector_run_service = connector_run_service or ConnectorRunService()
 
-    def run(
-        self, db: Session, connector: BaseJobSourceConnector
-    ) -> ConnectorRunResult:
+    def run(self, db: Session, connector: BaseJobSourceConnector) -> ConnectorRunResult:
         """Fetch + ingest, recording a ConnectorRun audit row for the attempt.
 
         On failure the run is marked FAILED with the error and whatever partial

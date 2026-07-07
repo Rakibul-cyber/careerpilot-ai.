@@ -9,7 +9,7 @@
 # eagerly. This keeps them as strings.
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import func, or_, select
@@ -192,12 +192,7 @@ class JobRepository:
             direction = sort_column.asc() if ascending else sort_column.desc()
             ordering = [direction.nullslast()]
 
-        stmt = (
-            stmt.where(*conditions)
-            .order_by(*ordering)
-            .offset(skip)
-            .limit(limit)
-        )
+        stmt = stmt.where(*conditions).order_by(*ordering).offset(skip).limit(limit)
         return list(db.execute(stmt).scalars().all())
 
     def list_stale_active_jobs(
@@ -286,7 +281,7 @@ class JobRepository:
 
     def soft_delete(self, db: Session, job: Job) -> Job:
         """Mark the job deleted by stamping deleted_at (UTC)."""
-        job.deleted_at = datetime.now(timezone.utc)
+        job.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(job)
         return job

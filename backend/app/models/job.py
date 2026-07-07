@@ -9,6 +9,7 @@ import enum
 import uuid
 from datetime import datetime
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     DateTime,
     Enum,
@@ -19,7 +20,6 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -58,9 +58,7 @@ class JobEmbeddingStatus(str, enum.Enum):
 class Job(BaseModel, Base):
     __tablename__ = "jobs"
     __table_args__ = (
-        UniqueConstraint(
-            "source", "external_id", name="uq_jobs_source_external_id"
-        ),
+        UniqueConstraint("source", "external_id", name="uq_jobs_source_external_id"),
         # GIN trigram indexes backing the ILIKE '%...%' matches in
         # JobRepository.search (created via migration 8c18594ccbc3).
         Index(
@@ -118,9 +116,7 @@ class Job(BaseModel, Base):
         index=True,
     )
 
-    location: Mapped[str | None] = mapped_column(
-        String(255), nullable=True, index=True
-    )
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     # e.g. onsite, hybrid, remote
     remote_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     # e.g. full_time, part_time, working_student, internship
@@ -182,9 +178,7 @@ class Job(BaseModel, Base):
         Vector(JOB_EMBEDDING_DIM), nullable=True
     )
     # Which embedding model produced `embedding` (e.g. text-embedding-3-small).
-    embedding_model: Mapped[str | None] = mapped_column(
-        String(100), nullable=True
-    )
+    embedding_model: Mapped[str | None] = mapped_column(String(100), nullable=True)
     embedding_status: Mapped[JobEmbeddingStatus] = mapped_column(
         Enum(
             JobEmbeddingStatus,

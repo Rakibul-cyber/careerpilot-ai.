@@ -35,9 +35,7 @@ class SemanticJobSearchService:
         vectors.
         """
         query_vector = self.embedding_client.embed_text(query)
-        rows = self.job_embedding_repository.semantic_search(
-            db, query_vector, limit
-        )
+        rows = self.job_embedding_repository.semantic_search(db, query_vector, limit)
         return [
             (job, round(max(0.0, min(1.0, 1.0 - distance)), 6))
             for job, distance in rows

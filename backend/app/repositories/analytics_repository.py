@@ -1,13 +1,13 @@
 # Read-only aggregate queries for the analytics dashboard (M35).
 
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import func, literal, select, union
 from sqlalchemy.orm import Session
 
-from app.models.application import Application, ApplicationSource, ApplicationStatus
+from app.models.application import Application, ApplicationStatus
 from app.models.company import Company
 from app.models.cover_letter import CoverLetter, CoverLetterStatus
 from app.models.interview_preparation import (
@@ -48,8 +48,10 @@ class AnalyticsRepository:
         start_date: datetime | None = None,
         end_date: datetime | None = None,
     ) -> int:
-        stmt = select(func.count()).select_from(Application).where(
-            *self._application_conditions(user_id, start_date, end_date)
+        stmt = (
+            select(func.count())
+            .select_from(Application)
+            .where(*self._application_conditions(user_id, start_date, end_date))
         )
         return int(db.execute(stmt).scalar_one() or 0)
 
@@ -76,40 +78,56 @@ class AnalyticsRepository:
     def active_application_count(
         self, db: Session, user_id: UUID, start_date=None, end_date=None
     ) -> int:
-        stmt = select(func.count()).select_from(Application).where(
-            *self._application_conditions(user_id, start_date, end_date),
-            Application.status.not_in(_TERMINAL_STATUSES),
+        stmt = (
+            select(func.count())
+            .select_from(Application)
+            .where(
+                *self._application_conditions(user_id, start_date, end_date),
+                Application.status.not_in(_TERMINAL_STATUSES),
+            )
         )
         return int(db.execute(stmt).scalar_one() or 0)
 
     def status_group_count(
         self, db: Session, user_id: UUID, statuses, start_date=None, end_date=None
     ) -> int:
-        stmt = select(func.count()).select_from(Application).where(
-            *self._application_conditions(user_id, start_date, end_date),
-            Application.status.in_(statuses),
+        stmt = (
+            select(func.count())
+            .select_from(Application)
+            .where(
+                *self._application_conditions(user_id, start_date, end_date),
+                Application.status.in_(statuses),
+            )
         )
         return int(db.execute(stmt).scalar_one() or 0)
 
     def upcoming_followup_count(self, db: Session, user_id: UUID) -> int:
-        now = datetime.now(timezone.utc)
-        stmt = select(func.count()).select_from(Application).where(
-            Application.user_id == user_id,
-            Application.deleted_at.is_(None),
-            Application.follow_up_date.is_not(None),
-            Application.follow_up_date >= now,
-            Application.status.not_in(_TERMINAL_STATUSES),
+        now = datetime.now(UTC)
+        stmt = (
+            select(func.count())
+            .select_from(Application)
+            .where(
+                Application.user_id == user_id,
+                Application.deleted_at.is_(None),
+                Application.follow_up_date.is_not(None),
+                Application.follow_up_date >= now,
+                Application.status.not_in(_TERMINAL_STATUSES),
+            )
         )
         return int(db.execute(stmt).scalar_one() or 0)
 
     def due_followup_count(self, db: Session, user_id: UUID) -> int:
-        now = datetime.now(timezone.utc)
-        stmt = select(func.count()).select_from(Application).where(
-            Application.user_id == user_id,
-            Application.deleted_at.is_(None),
-            Application.follow_up_date.is_not(None),
-            Application.follow_up_date <= now,
-            Application.status.not_in(_TERMINAL_STATUSES),
+        now = datetime.now(UTC)
+        stmt = (
+            select(func.count())
+            .select_from(Application)
+            .where(
+                Application.user_id == user_id,
+                Application.deleted_at.is_(None),
+                Application.follow_up_date.is_not(None),
+                Application.follow_up_date <= now,
+                Application.status.not_in(_TERMINAL_STATUSES),
+            )
         )
         return int(db.execute(stmt).scalar_one() or 0)
 
@@ -278,9 +296,7 @@ class AnalyticsRepository:
                     InterviewPreparation.updated_at,
                     InterviewPreparation.generation_status,
                 )
-                .where(
-                    *self._interview_prep_conditions(user_id, start_date, end_date)
-                )
+                .where(*self._interview_prep_conditions(user_id, start_date, end_date))
                 .order_by(InterviewPreparation.updated_at.desc())
                 .limit(limit),
                 lambda status: f"Interview preparation {status.value}",
@@ -295,9 +311,7 @@ class AnalyticsRepository:
                     JobRecommendation.updated_at,
                     literal("updated"),
                 )
-                .where(
-                    *self._recommendation_conditions(user_id, start_date, end_date)
-                )
+                .where(*self._recommendation_conditions(user_id, start_date, end_date))
                 .order_by(JobRecommendation.updated_at.desc())
                 .limit(limit),
                 lambda status: f"Recommendation {status}",

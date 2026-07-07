@@ -3,7 +3,7 @@
 # All reads are scoped by user_id and exclude soft-deleted rows. No scoring
 # logic here (that lives in the scoring/match services). Lists are newest-first.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -44,9 +44,7 @@ class JobMatchRepository:
         )
         return db.execute(stmt).scalar_one_or_none()
 
-    def get_by_id(
-        self, db: Session, match_id: UUID, user_id: UUID
-    ) -> JobMatch | None:
+    def get_by_id(self, db: Session, match_id: UUID, user_id: UUID) -> JobMatch | None:
         """Return the user's live match with this id, or None."""
         stmt = select(JobMatch).where(
             JobMatch.id == match_id,
@@ -79,7 +77,7 @@ class JobMatchRepository:
 
     def soft_delete(self, db: Session, match: JobMatch) -> JobMatch:
         """Mark the match deleted by stamping deleted_at (UTC)."""
-        match.deleted_at = datetime.now(timezone.utc)
+        match.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(match)
         return match

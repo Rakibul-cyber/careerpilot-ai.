@@ -15,7 +15,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.resume_profile import ResumeParseStatus
 
-
 # --- Internal AI output contract -------------------------------------------
 # Validated with model_validate_json() against the raw LLM text before the row
 # is saved. Sub-sections are stored as JSONB, so their shape is captured here.

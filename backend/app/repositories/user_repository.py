@@ -5,7 +5,7 @@
 # All reads exclude soft-deleted rows
 # (deleted_at IS NULL).
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -48,7 +48,7 @@ class UserRepository:
 
     def soft_delete(self, db: Session, user: User) -> User:
         """Mark the user deleted by stamping deleted_at (UTC)."""
-        user.deleted_at = datetime.now(timezone.utc)
+        user.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(user)
         return user

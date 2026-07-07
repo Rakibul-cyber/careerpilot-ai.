@@ -1,7 +1,7 @@
 import sys
 import unittest
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -39,8 +39,8 @@ class AnalyticsRepositoryTests(unittest.TestCase):
         repo.application_count(
             db,
             uuid.uuid4(),
-            datetime(2026, 1, 1, tzinfo=timezone.utc),
-            datetime(2026, 2, 1, tzinfo=timezone.utc),
+            datetime(2026, 1, 1, tzinfo=UTC),
+            datetime(2026, 2, 1, tzinfo=UTC),
         )
 
         sql = compile_sql(db.statements[0])

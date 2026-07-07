@@ -3,7 +3,7 @@
 # All reads are scoped by user_id and exclude soft-deleted rows. No business
 # logic here (parsing / validation lives in ResumeParserService).
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -66,11 +66,9 @@ class ResumeProfileRepository:
         )
         return list(db.execute(stmt).scalars().all())
 
-    def soft_delete(
-        self, db: Session, profile: ResumeProfile
-    ) -> ResumeProfile:
+    def soft_delete(self, db: Session, profile: ResumeProfile) -> ResumeProfile:
         """Mark the profile deleted by stamping deleted_at (UTC)."""
-        profile.deleted_at = datetime.now(timezone.utc)
+        profile.deleted_at = datetime.now(UTC)
         db.commit()
         db.refresh(profile)
         return profile

@@ -16,9 +16,7 @@ class CompanyService:
     def __init__(self, company_repository: CompanyRepository | None = None) -> None:
         self.company_repository = company_repository or CompanyRepository()
 
-    def get_company_by_id(
-        self, db: Session, company_id: UUID
-    ) -> Company | None:
+    def get_company_by_id(self, db: Session, company_id: UUID) -> Company | None:
         return self.company_repository.get_by_id(db, company_id)
 
     def list_companies(
@@ -36,9 +34,7 @@ class CompanyService:
         """
         normalized_name = normalize_company_name(name)
 
-        existing = self.company_repository.get_by_normalized_name(
-            db, normalized_name
-        )
+        existing = self.company_repository.get_by_normalized_name(db, normalized_name)
         if existing is not None:
             return existing
 

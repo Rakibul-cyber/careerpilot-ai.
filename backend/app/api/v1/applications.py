@@ -52,7 +52,7 @@ def create_application(
     except ApplicationResourceNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        )
+        ) from exc
     except (
         ApplicationResourceMismatchError,
         InvalidApplicationDataError,
@@ -60,7 +60,7 @@ def create_application(
     ) as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
-        )
+        ) from exc
 
 
 @router.get("", response_model=list[ApplicationRead])
@@ -103,7 +103,7 @@ def get_application(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Application not found",
-        )
+        ) from None
 
 
 @router.patch("/{application_id}", response_model=ApplicationRead)
@@ -116,22 +116,20 @@ def update_application(
 ) -> ApplicationRead:
     """Patch editable application metadata."""
     try:
-        return service.update_application(
-            db, current_user.id, application_id, payload
-        )
+        return service.update_application(db, current_user.id, application_id, payload)
     except ApplicationNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Application not found",
-        )
+        ) from None
     except ApplicationResourceNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        )
+        ) from exc
     except ApplicationResourceMismatchError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
-        )
+        ) from exc
 
 
 @router.patch("/{application_id}/status", response_model=ApplicationRead)
@@ -151,11 +149,11 @@ def update_application_status(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Application not found",
-        )
+        ) from None
     except InvalidApplicationStatusTransitionError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
-        )
+        ) from exc
 
 
 @router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -5,13 +5,13 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+from app.models.application import ApplicationStatus
 from app.repositories.analytics_repository import (
     APPLICATION_INTERVIEW_STATUSES,
     APPLICATION_OFFER_STATUSES,
     APPLICATION_RESPONSE_STATUSES,
     AnalyticsRepository,
 )
-from app.models.application import ApplicationStatus
 from app.schemas.analytics import (
     AIUsageAnalytics,
     AnalyticsOverview,
@@ -24,9 +24,7 @@ from app.schemas.analytics import (
 
 
 class AnalyticsService:
-    def __init__(
-        self, analytics_repository: AnalyticsRepository | None = None
-    ) -> None:
+    def __init__(self, analytics_repository: AnalyticsRepository | None = None) -> None:
         self.analytics_repository = analytics_repository or AnalyticsRepository()
 
     def overview(
@@ -169,12 +167,20 @@ class AnalyticsService:
             average_location_score=averages["location"],
             average_experience_score=averages["experience"],
             best_matches=self.analytics_repository.ranked_matches(
-                db, user_id, descending=True, limit=limit,
-                start_date=start_date, end_date=end_date,
+                db,
+                user_id,
+                descending=True,
+                limit=limit,
+                start_date=start_date,
+                end_date=end_date,
             ),
             weak_matches=self.analytics_repository.ranked_matches(
-                db, user_id, descending=False, limit=limit,
-                start_date=start_date, end_date=end_date,
+                db,
+                user_id,
+                descending=False,
+                limit=limit,
+                start_date=start_date,
+                end_date=end_date,
             ),
             common_missing_skills=[
                 MissingSkillMetric(skill=skill, count=count)

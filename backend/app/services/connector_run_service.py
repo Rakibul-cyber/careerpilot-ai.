@@ -3,7 +3,7 @@
 # Manages the lifecycle of a connector-run audit record: start (RUNNING) then
 # terminal mark_success / mark_failed with counts, timing, and error text.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -28,7 +28,7 @@ class ConnectorRunService:
         run = ConnectorRun(
             connector_name=connector_name,
             status=ConnectorRunStatus.RUNNING,
-            started_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
         )
         created = self.connector_run_repository.create(db, run)
         logger.info(
@@ -49,7 +49,7 @@ class ConnectorRunService:
         run.status = ConnectorRunStatus.SUCCESS
         run.fetched_count = fetched_count
         run.ingested_count = ingested_count
-        run.finished_at = datetime.now(timezone.utc)
+        run.finished_at = datetime.now(UTC)
         updated = self.connector_run_repository.update(db, run)
         logger.info(
             "ConnectorRun SUCCESS run_id=%s connector=%s fetched=%d ingested=%d",
@@ -73,10 +73,11 @@ class ConnectorRunService:
         run.fetched_count = fetched_count
         run.ingested_count = ingested_count
         run.error_message = error_message
-        run.finished_at = datetime.now(timezone.utc)
+        run.finished_at = datetime.now(UTC)
         updated = self.connector_run_repository.update(db, run)
         logger.error(
-            "ConnectorRun FAILED run_id=%s connector=%s fetched=%d ingested=%d error=%s",
+            "ConnectorRun FAILED run_id=%s connector=%s fetched=%d "
+            "ingested=%d error=%s",
             updated.id,
             updated.connector_name,
             fetched_count,

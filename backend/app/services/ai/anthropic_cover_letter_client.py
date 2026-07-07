@@ -61,9 +61,7 @@ class AnthropicCoverLetterClient(AICoverLetterClient):
             try:
                 import anthropic
             except ImportError as exc:  # pragma: no cover - deploy misconfig
-                raise CoverLetterAIError(
-                    "anthropic SDK is not installed"
-                ) from exc
+                raise CoverLetterAIError("anthropic SDK is not installed") from exc
             self._client = anthropic.Anthropic(api_key=self._api_key)
         return self._client
 

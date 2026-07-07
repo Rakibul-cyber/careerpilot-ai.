@@ -109,17 +109,13 @@ class AnthropicInterviewPreparationClient(AIInterviewPreparationClient):
     ) -> None:
         self._api_key = api_key or settings.ANTHROPIC_API_KEY
         self._model = model or settings.ANTHROPIC_MODEL
-        self._max_tokens = (
-            max_tokens or settings.AI_INTERVIEW_PREPARATION_MAX_TOKENS
-        )
+        self._max_tokens = max_tokens or settings.AI_INTERVIEW_PREPARATION_MAX_TOKENS
         self._client = None
 
     def _get_client(self):
         if self._client is None:
             if not self._api_key:
-                raise InterviewPreparationAIError(
-                    "ANTHROPIC_API_KEY is not configured"
-                )
+                raise InterviewPreparationAIError("ANTHROPIC_API_KEY is not configured")
             try:
                 import anthropic
             except ImportError as exc:  # pragma: no cover - deploy misconfig
@@ -174,6 +170,4 @@ class AnthropicInterviewPreparationClient(AIInterviewPreparationClient):
         for block in response.content:
             if getattr(block, "type", None) == "text":
                 return block.text
-        raise InterviewPreparationAIError(
-            "AI response contained no text content"
-        )
+        raise InterviewPreparationAIError("AI response contained no text content")

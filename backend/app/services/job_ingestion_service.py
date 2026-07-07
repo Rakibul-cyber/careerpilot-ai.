@@ -5,7 +5,7 @@
 # dedups on (source, external_id) — upserting the mutable fields when the same
 # listing is seen again. Scrapers must go through here, never the repository.
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
@@ -34,7 +34,7 @@ class JobIngestionService:
         company = self.company_service.get_or_create_company(
             db, name=raw_job.company_name, location=raw_job.location
         )
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Dedup only when the source provided a stable external id.
         if raw_job.external_id:

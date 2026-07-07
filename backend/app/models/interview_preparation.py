@@ -5,7 +5,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text, text
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -70,12 +70,8 @@ class InterviewPreparation(BaseModel, Base):
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     strengths: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     weaknesses: Mapped[list | None] = mapped_column(JSONB, nullable=True)
-    technical_questions: Mapped[list | None] = mapped_column(
-        JSONB, nullable=True
-    )
-    behavioral_questions: Mapped[list | None] = mapped_column(
-        JSONB, nullable=True
-    )
+    technical_questions: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    behavioral_questions: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     company_questions: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     study_topics: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     interview_tips: Mapped[list | None] = mapped_column(JSONB, nullable=True)

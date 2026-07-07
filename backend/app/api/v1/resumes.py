@@ -55,18 +55,16 @@ def upload_resume(
 ) -> ResumeRead:
     """Upload a PDF/DOCX resume; stores it and extracts text."""
     try:
-        return service.upload_resume(
-            db, current_user.id, file, is_primary=is_primary
-        )
+        return service.upload_resume(db, current_user.id, file, is_primary=is_primary)
     except UnsupportedFileTypeError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
-        )
+        ) from exc
     except FileTooLargeError as exc:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail=str(exc),
-        )
+        ) from exc
 
 
 @router.get("", response_model=list[ResumeRead])
@@ -113,9 +111,7 @@ def get_resume_text(
     return resume
 
 
-@router.post(
-    "/{resume_id}/parse", response_model=ResumeProfileParseResponse
-)
+@router.post("/{resume_id}/parse", response_model=ResumeProfileParseResponse)
 def parse_resume(
     resume_id: UUID,
     db: Session = Depends(get_db),
@@ -134,11 +130,11 @@ def parse_resume(
     except ResumeNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Resume not found"
-        )
+        ) from None
     except ResumeNotParsableError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
-        )
+        ) from exc
     return ResumeProfileParseResponse(
         resume_id=profile.resume_id,
         parse_status=profile.parse_status,
