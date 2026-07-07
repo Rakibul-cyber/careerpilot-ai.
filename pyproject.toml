@@ -1,0 +1,17 @@
+[tool.coverage.run]
+source = ["backend/app"]
+omit = [
+    "backend/tests/*",
+    "backend/alembic/*",
+    "backend/app/api/*",
+    "backend/app/connectors/*",
+    "backend/app/scheduler/*",
+    "backend/app/main.py",
+    "backend/app/services/ai/anthropic_*.py",
+    "backend/app/services/ai/openai_*.py",
+]
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
+skip_covered = true

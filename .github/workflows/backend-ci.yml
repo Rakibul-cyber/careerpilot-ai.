@@ -53,8 +53,11 @@ jobs:
       - name: Compile backend
         run: python -m compileall backend/app backend/tests
 
-      - name: Run backend unit tests
-        run: python -m unittest discover backend/tests
+      - name: Run backend unit tests with coverage
+        run: coverage run -m unittest discover backend/tests
+
+      - name: Report backend coverage
+        run: coverage report
 
       - name: Run database migrations
         run: alembic -c backend/alembic.ini upgrade head
