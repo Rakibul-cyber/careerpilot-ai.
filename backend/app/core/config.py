@@ -9,9 +9,9 @@ from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 class Settings(BaseSettings):
     APP_NAME: str = "CareerPilot AI"
-    ENVIRONMENT: Literal["development", "test", "staging", "production"] = (
-        "development"
-    )
+    ENVIRONMENT: Literal[
+        "development", "test", "testing", "staging", "production"
+    ] = "development"
     DEBUG: bool = False
     API_V1_PREFIX: str = "/api/v1"
 

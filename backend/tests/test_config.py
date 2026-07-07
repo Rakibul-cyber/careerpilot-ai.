@@ -24,6 +24,16 @@ class SettingsTests(unittest.TestCase):
         self.assertIsNone(settings.ANTHROPIC_API_KEY)
         self.assertIsNone(settings.OPENAI_API_KEY)
 
+    def test_testing_environment_is_valid(self):
+        settings = Settings(
+            _env_file=None,
+            ENVIRONMENT="testing",
+            DEBUG=False,
+            SECRET_KEY="dev-secret",
+        )
+
+        self.assertEqual(settings.ENVIRONMENT, "testing")
+
     def test_comma_separated_cors_values_parse_to_lists(self):
         settings = Settings(
             _env_file=None,
